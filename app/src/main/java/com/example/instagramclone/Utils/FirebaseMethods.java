@@ -59,14 +59,19 @@ public class FirebaseMethods  {
                         // random 3 digits from 100 ~ 999
                         int random3Digits = random.nextInt(900) + 100;
                         createUserWithEmailAndPassword(email, password, username + random3Digits );
+
                     } else {
                         Log.d(TAG, "we can create an user now");
                         createUserWithEmailAndPassword(email, password, username);
+
                     }
 
-                } else {
+                }
+                else {
                     Log.d(TAG, "task failed");
                 }
+
+
 
             }
         });
@@ -86,6 +91,8 @@ public class FirebaseMethods  {
                                     Toast.LENGTH_SHORT).show();
                             addNewUser(email, username);
                             addNewUserAccountSetting("","","",username,"");
+                            sendVerificationEmail();
+                            mAuth.signOut();
                          //   mAuth.signOut();
                         } else {
                             // If sign in fails, display a message to the user.
@@ -102,6 +109,26 @@ public class FirebaseMethods  {
 
 
     }
+public void sendVerificationEmail() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+    if (user !=null) {
+        user.sendEmailVerification().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+
+                } else {
+                    Toast.makeText(mContext,"could't send verification email.",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+}
+    /** add information to the users nodes
+     * add information to the user_account_settings node
+     */
+
+
 
 
     public void addNewUser(String email, String username) {

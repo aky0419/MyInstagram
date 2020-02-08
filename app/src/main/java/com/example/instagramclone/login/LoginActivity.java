@@ -84,7 +84,23 @@ private boolean isStringNull(String string) {
                                     if (task.isSuccessful()) {
                                         // Sign in success, update UI with the signed-in user's information
                                         Log.d(TAG, "signInWithEmail:success");
-                                       // FirebaseUser user = mAuth.getCurrentUser();
+                                        FirebaseUser user = mAuth.getCurrentUser();
+                                        try {
+                                            if (user.isEmailVerified()) {
+                                                Log.d(TAG, "onComplete: success, email is verified.");
+                                                Intent intent = new Intent(mContext, HomeActivity.class);
+                                                startActivity(intent);
+                                            } else {
+                                                Toast.makeText(mContext, "Email is not verified \n check you email inbox.", Toast.LENGTH_SHORT).show();
+                                                mProgressBar.setVisibility(View.GONE);
+                                                mPleaseWait.setVisibility(View.GONE);
+                                                mAuth.signOut();
+                                            }
+
+                                        }catch (NullPointerException e) {
+                                            Log.d(TAG, "onComplete: NullPointerException: " +e.getMessage());
+                                        }
+
 
                                         Toast.makeText(mContext, R.string.auth_success,
                                                 Toast.LENGTH_SHORT).show();
