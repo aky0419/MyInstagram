@@ -9,6 +9,8 @@ import androidx.annotation.NonNull;
 
 import com.example.instagramclone.R;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -35,6 +37,7 @@ public class FirebaseMethods  {
     public FirebaseMethods(Context mContext) {
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
+        FirebaseFirestore.setLoggingEnabled(true);
         this.mContext = mContext;
 
         if (mAuth.getCurrentUser() !=null) {
@@ -44,7 +47,7 @@ public class FirebaseMethods  {
 
     public void registerNewEmail(final String email, final String password, final String username) {
         final CollectionReference usersRef = db.collection("users");
-        Query query = usersRef.whereEqualTo("username",username);
+        Query query = usersRef.whereEqualTo("username",StringManipulation.condenseUsername(username));
         query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -82,7 +85,7 @@ public class FirebaseMethods  {
                             Toast.makeText(mContext, R.string.auth_success,
                                     Toast.LENGTH_SHORT).show();
                             addNewUser(email, username);
-                            mAuth.signOut();
+                         //   mAuth.signOut();
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "createUserWithEmail:failure", task.getException());
@@ -100,16 +103,22 @@ public class FirebaseMethods  {
     }
 
 
-    public void addNewUser(String email, String name) {
+    public void addNewUser(String email, String username) {
+
         String currentUserId = mAuth.getCurrentUser().getUid();
         Map<String, Object> user = new HashMap<>();
         //email,phone_number,user_id,username
         user.put("email", email);
         user.put("phone_number", "");
         user.put("user_id", currentUserId);
-        user.put("username", name);
-   db.collection("users").document(currentUserId)
-           .set(user);
+        user.put("username", StringManipulation.condenseUsername(username));
+        db.collection("users").document(currentUserId).set(user)
+        .addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                Log.d(TAG, "addNewUser onComplete: ");
+            }
+        });
 
 
 
