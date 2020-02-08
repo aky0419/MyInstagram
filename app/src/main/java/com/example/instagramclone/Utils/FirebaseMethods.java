@@ -85,6 +85,7 @@ public class FirebaseMethods  {
                             Toast.makeText(mContext, R.string.auth_success,
                                     Toast.LENGTH_SHORT).show();
                             addNewUser(email, username);
+                            addNewUserAccountSetting("","","",username,"");
                          //   mAuth.signOut();
                         } else {
                             // If sign in fails, display a message to the user.
@@ -106,6 +107,7 @@ public class FirebaseMethods  {
     public void addNewUser(String email, String username) {
 
         String currentUserId = mAuth.getCurrentUser().getUid();
+
         Map<String, Object> user = new HashMap<>();
         //email,phone_number,user_id,username
         user.put("email", email);
@@ -121,6 +123,27 @@ public class FirebaseMethods  {
         });
 
 
+
+    }
+
+    public void addNewUserAccountSetting (String description, String display_name, String profile_photo, String username, String website) {
+        String currentUserId = mAuth.getCurrentUser().getUid();
+        Map<String, Object> user_account_setting = new HashMap<>();
+        user_account_setting.put("description", description);
+        user_account_setting.put("display_name", display_name);
+        user_account_setting.put("followers", 0);
+        user_account_setting.put("following", 0);
+        user_account_setting.put("posts", 0);
+        user_account_setting.put("profile_photo", profile_photo);
+        user_account_setting.put("username", StringManipulation.condenseUsername(username));
+        user_account_setting.put("website", website);
+        db.collection("user_account_settings").document(currentUserId).set(user_account_setting)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        Log.d(TAG, "addNewUserAccountSetting onComplete: ");
+                    }
+                });
 
     }
 }
