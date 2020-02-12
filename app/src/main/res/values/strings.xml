@@ -7,4 +7,9 @@
     <string name="auth_failed">Failed to Authenticate</string>
     <string name="auth_success">Authentication Success</string>
 
+    <!--Intent Extras -->
+    <string name="calling_activity">calling_activity</string>
+
+    <!--activity names -->
+    <string name="profile_activity">Profile Activity</string>
 </resources>

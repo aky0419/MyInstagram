@@ -48,7 +48,7 @@ public class ProfileFragment extends Fragment {
 
     private static final String TAG = "ProfileFragment";
 
-    private TextView mPosts, mFollowers, mFollowing, mDisplayName, mUsername, mWebsite, mDescription;
+    private TextView mPosts, mFollowers, mFollowing, mDisplayName, mUsername, mWebsite, mDescription, editProfile;
     private CircleImageView mProfilePhoto;
     private Toolbar toolbar;
     private BottomNavigationView bottomNavigationView;
@@ -70,7 +70,7 @@ public class ProfileFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull final LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
         mPosts = view.findViewById(R.id.tvPosts);
@@ -80,6 +80,17 @@ public class ProfileFragment extends Fragment {
         mUsername = view.findViewById(R.id.profileName);
         mWebsite = view.findViewById(R.id.display_website);
         mDescription = view.findViewById(R.id.display_description);
+        editProfile =view.findViewById(R.id.textEditProfile);
+        editProfile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "onClick: navigating to" +mContext.getString(R.string.edit_profile_fragment));
+                Intent intent = new Intent(mContext, AccountSettingActivity.class);
+                intent.putExtra(getString(R.string.calling_activity), getString(R.string.profile_activity));
+                startActivity(intent);
+
+            }
+        });
 
 
         gridView = view.findViewById(R.id.gridView);
