@@ -108,7 +108,7 @@ public class ProfileFragment extends Fragment {
         setupBottomNavigationView();
         setupToolbar();
 
-        setupFirebaseAuth();
+
         return view;
     }
 
@@ -188,7 +188,8 @@ public class ProfileFragment extends Fragment {
     public void onStart() {
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = mAuth.getCurrentUser();
+        //FirebaseUser currentUser = mAuth.getCurrentUser();
+        setupFirebaseAuth();
         // check if user is logged in
         // checkCurrentUser(currentUser);
 
