@@ -23,6 +23,7 @@ import androidx.fragment.app.Fragment;
 import com.example.instagramclone.R;
 import com.example.instagramclone.Utils.BottomNavigationViewHelper;
 
+import com.example.instagramclone.Utils.StringManipulation;
 import com.example.instagramclone.Utils.UniversalImageLoader;
 import com.example.instagramclone.login.LoginActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -163,7 +164,10 @@ public class ProfileFragment extends Fragment {
                 UniversalImageLoader.setImage(doc.get("profile_photo").toString(),mProfilePhoto,null,"");
 
                 mDescription.setText(doc.get("description").toString());
-                mUsername.setText(doc.get("username").toString());
+
+                String username = StringManipulation.expandUsername(doc.get("username").toString());
+                mUsername.setText(username);
+
                 mWebsite.setText(doc.get("website").toString());
                 mFollowers.setText(doc.get("followers").toString());
                 mFollowing.setText(doc.get("following").toString());

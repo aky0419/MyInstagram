@@ -101,7 +101,7 @@
                 <EditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:id="@+id/website_name"
+                    android:id="@+id/website"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="40dp"
                     android:background="@null"
