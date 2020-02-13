@@ -142,7 +142,10 @@ public class EditProfileFragment extends Fragment {
                 mUsername.setText(username);
                 mWebsite.setText(doc.get("website").toString());
                 mDisplayName.setText(doc.get("display_name").toString());
+
+                String email = doc.get("email").toString();
                 initialProfileField.put("username", username);
+                initialProfileField.put("email", email);
 
 
             }
@@ -186,9 +189,22 @@ public class EditProfileFragment extends Fragment {
         Map<String, Object> user = new HashMap<>();
         user.put("email", email);
         user.put("phone_number", phoneNumber);
+        // case1: if the user made a change to their username
         if (!username.equals(this.initialProfileField.get("username"))) {
             checkIfUsernameExists(username);
         }
+        // case2: if the user made a change to their email
+        if (!username.equals(this.initialProfileField.get("email"))) {
+
+            //step1) Reauthentication
+            //
+            //step2) check if the email already is registered
+            //step3) change the email
+
+        }
+
+
+
         db.collection("users").document(mAuth.getUid()).update(user);
 
 
@@ -214,14 +230,12 @@ public class EditProfileFragment extends Fragment {
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if (task.isSuccessful()) {
                     QuerySnapshot result = task.getResult();
-                    //case1 the user changed their username therefore we need to check for uniqueness
                     if (result.size() > 0) {
                         Log.d(TAG, "has existed user");
                         Toast.makeText(getActivity(),"That username already exists.",Toast.LENGTH_SHORT).show();
 
 
-                    } //case2: the user did not change their username
-                    else {
+                    }   else {
                         mFirebaseMethods.updateUsername(username);
 
                         Toast.makeText(getActivity(),"saved username.",Toast.LENGTH_SHORT).show();
