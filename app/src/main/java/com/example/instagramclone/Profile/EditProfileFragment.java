@@ -14,7 +14,9 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
+import com.example.instagramclone.Dialogs.ConfirmPasswordDialog;
 import com.example.instagramclone.R;
 import com.example.instagramclone.Utils.FirebaseMethods;
 import com.example.instagramclone.Utils.StringManipulation;
@@ -143,9 +145,8 @@ public class EditProfileFragment extends Fragment {
                 mWebsite.setText(doc.get("website").toString());
                 mDisplayName.setText(doc.get("display_name").toString());
 
-                String email = doc.get("email").toString();
                 initialProfileField.put("username", username);
-                initialProfileField.put("email", email);
+
 
 
             }
@@ -162,6 +163,8 @@ public class EditProfileFragment extends Fragment {
                 mEmail.setText(doc.get("email").toString());
                 mPhoneNumber.setText(doc.get("phone_number").toString());
 
+                String email = doc.get("email").toString();
+                initialProfileField.put("email", email);
 
 
 
@@ -187,21 +190,26 @@ public class EditProfileFragment extends Fragment {
 
 
         Map<String, Object> user = new HashMap<>();
-        user.put("email", email);
         user.put("phone_number", phoneNumber);
         // case1: if the user made a change to their username
         if (!username.equals(this.initialProfileField.get("username"))) {
             checkIfUsernameExists(username);
         }
         // case2: if the user made a change to their email
-        if (!username.equals(this.initialProfileField.get("email"))) {
+        if (!email.equals(this.initialProfileField.get("email"))) {
+//
+//            //step1) Reauthentication
+//            //          -confirm the password and email
+            ConfirmPasswordDialog dialog = new ConfirmPasswordDialog();
+            dialog.show(getFragmentManager(),getString(R.string.confirm_password_dialog));
 
-            //step1) Reauthentication
-            //
             //step2) check if the email already is registered
+            //          -'fetchProvidersForEmail(String email)'
             //step3) change the email
+            //          -submit new email to the database and authentication
 
         }
+
 
 
 
