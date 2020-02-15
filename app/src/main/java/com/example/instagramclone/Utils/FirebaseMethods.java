@@ -62,7 +62,20 @@ public class FirebaseMethods  {
         user_account_settings.put("username", StringManipulation.condenseUsername(username));
         db.collection("user_account_settings").document(mAuth.getUid()).update(user_account_settings);
     }
-            public void registerNewEmail(final String email, final String password, final String username) {
+
+    public void updateEmail(String email) {
+        Log.d(TAG, "updateUsername: updating username to: " + email);
+
+        Map<String, Object> user = new HashMap<>();
+        user.put("email", StringManipulation.condenseUsername(email));
+        db.collection("users").document(mAuth.getUid()).update(user);
+
+    }
+
+
+
+
+    public void registerNewEmail(final String email, final String password, final String username) {
                 final CollectionReference usersRef = db.collection("users");
                 Query query = usersRef.whereEqualTo("username", StringManipulation.condenseUsername(username));
                 query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {

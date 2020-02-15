@@ -1,6 +1,5 @@
 package com.example.instagramclone.Profile;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,7 +13,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 
 import com.example.instagramclone.Dialogs.ConfirmPasswordDialog;
 import com.example.instagramclone.R;
@@ -24,24 +22,80 @@ import com.example.instagramclone.Utils.UniversalImageLoader;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.SignInMethodQueryResult;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class EditProfileFragment extends Fragment {
+public class EditProfileFragment extends Fragment implements ConfirmPasswordDialog.OnConfirmPasswordListener {
+    @Override
+    public void onConfirmPassword(String password) {
+        Log.d(TAG, "onConfirmPassword: got the password: " + password);
+
+
+        // Get auth credentials from the user for re-authentication. The example below shows
+        // email and password credentials but there are multiple possible providers,
+        // such as GoogleAuthProvider or FacebookAuthProvider.
+        AuthCredential credential = EmailAuthProvider
+                .getCredential(mAuth.getCurrentUser().getEmail(), password);
+
+        // Prompt the user to re-provide their sign-in credentials
+        mAuth.getCurrentUser().reauthenticate(credential)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "User re-authenticated.");
+
+
+                            // check to see if the email is not already present in the database
+                            mAuth.fetchSignInMethodsForEmail(mEmail.getText().toString()).addOnCompleteListener(new OnCompleteListener<SignInMethodQueryResult>() {
+                                @Override
+                                public void onComplete(@NonNull Task<SignInMethodQueryResult> task) {
+                                    boolean isNewUser = task.getResult().getSignInMethods().isEmpty();
+                                    if (isNewUser) {
+                                        Log.e("TAG", "Is New User!");
+
+                                        //the email is available so update it
+                                        mAuth.getCurrentUser().updateEmail(mEmail.getText().toString())
+                                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<Void> task) {
+                                                        if (task.isSuccessful()) {
+                                                            Log.d(TAG, "User email address updated.");
+                                                            Toast.makeText(getActivity(), "email updated", Toast.LENGTH_SHORT).show();
+                                                            mFirebaseMethods.updateEmail(mEmail.getText().toString());
+                                                        }
+                                                    }
+                                                });
+
+                                    } else {
+                                        Log.e("TAG", "Is Old User!");
+                                        Toast.makeText(getActivity(), "That email is already in use", Toast.LENGTH_SHORT).show();
+                                    }
+
+                                }
+                            });
+
+                        } else {
+                            Log.d(TAG, "onComplete: re-authentication failed");
+                        }
+
+                    }
+                });
+    }
 
     private static final String TAG = "EditProfileFragment";
 
@@ -56,7 +110,7 @@ public class EditProfileFragment extends Fragment {
     private TextView mChangeProfilePhoto;
     private CircleImageView mProfilePhoto;
     private ImageView saveChanges;
-   private  HashMap<String, String> initialProfileField;
+    private HashMap<String, String> initialProfileField;
 
     @Nullable
     @Override
@@ -64,7 +118,7 @@ public class EditProfileFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_edit_profile, container, false);
         initialProfileField = new HashMap<>();
         mProfilePhoto = view.findViewById(R.id.profile_photo);
-        mDisplayName =view.findViewById(R.id.display_name);
+        mDisplayName = view.findViewById(R.id.display_name);
         mUsername = view.findViewById(R.id.username);
         mWebsite = view.findViewById(R.id.website);
         mDescription = view.findViewById(R.id.description);
@@ -148,7 +202,6 @@ public class EditProfileFragment extends Fragment {
                 initialProfileField.put("username", username);
 
 
-
             }
         });
 
@@ -167,18 +220,18 @@ public class EditProfileFragment extends Fragment {
                 initialProfileField.put("email", email);
 
 
-
             }
         });
 
 
     }
+
     /**
      * Retrieves the data contained in the widgets and submit it to the database
      * Before doing so, it checks to make sure the username chosen is unique
      */
 
-    private void saveProfileSettings(){
+    private void saveProfileSettings() {
 
         final String displayName = mDisplayName.getText().toString();
         final String username = mUsername.getText().toString();
@@ -186,7 +239,6 @@ public class EditProfileFragment extends Fragment {
         final String description = mDescription.getText().toString();
         final String email = mEmail.getText().toString();
         final String phoneNumber = mPhoneNumber.getText().toString();
-
 
 
         Map<String, Object> user = new HashMap<>();
@@ -201,7 +253,8 @@ public class EditProfileFragment extends Fragment {
 //            //step1) Reauthentication
 //            //          -confirm the password and email
             ConfirmPasswordDialog dialog = new ConfirmPasswordDialog();
-            dialog.show(getFragmentManager(),getString(R.string.confirm_password_dialog));
+            dialog.show(getFragmentManager(), getString(R.string.confirm_password_dialog));
+            dialog.setTargetFragment(EditProfileFragment.this, 1);
 
             //step2) check if the email already is registered
             //          -'fetchProvidersForEmail(String email)'
@@ -209,8 +262,6 @@ public class EditProfileFragment extends Fragment {
             //          -submit new email to the database and authentication
 
         }
-
-
 
 
         db.collection("users").document(mAuth.getUid()).update(user);
@@ -223,8 +274,9 @@ public class EditProfileFragment extends Fragment {
         db.collection("user_account_settings").document(mAuth.getUid()).update(user_account_settings);
 
     }
+
     /**
-     *check if username already exists in the database
+     * check if username already exists in the database
      */
 
 
@@ -240,13 +292,13 @@ public class EditProfileFragment extends Fragment {
                     QuerySnapshot result = task.getResult();
                     if (result.size() > 0) {
                         Log.d(TAG, "has existed user");
-                        Toast.makeText(getActivity(),"That username already exists.",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), "That username already exists.", Toast.LENGTH_SHORT).show();
 
 
-                    }   else {
+                    } else {
                         mFirebaseMethods.updateUsername(username);
 
-                        Toast.makeText(getActivity(),"saved username.",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), "saved username.", Toast.LENGTH_SHORT).show();
 
 
                     }
@@ -289,4 +341,6 @@ public class EditProfileFragment extends Fragment {
 //
 //        }
     }
+
+
 }
