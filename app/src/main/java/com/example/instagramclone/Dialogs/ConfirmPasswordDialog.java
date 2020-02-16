@@ -23,17 +23,16 @@ import com.google.firebase.auth.FirebaseUser;
 
 public class ConfirmPasswordDialog extends DialogFragment {
     private static final String TAG = "ConfirmPasswordDialog";
-    private TextView cancelDialog, confirmDialog;
     private EditText mPassword;
 
     public interface OnConfirmPasswordListener{
-        public void onConfirmPassword(String password);
+         void onConfirmPassword(String password);
 
 
 
     }
 
-    OnConfirmPasswordListener OnConfirmPasswordListener;
+    private OnConfirmPasswordListener OnConfirmPasswordListener;
 
     @Nullable
     @Override
@@ -41,7 +40,7 @@ public class ConfirmPasswordDialog extends DialogFragment {
         View view = inflater.inflate(R.layout.dialog_confirm_password, container, false);
         mPassword = view.findViewById(R.id.confirm_password);
         Log.d(TAG, "onCreateView: started.");
-        cancelDialog = view.findViewById(R.id.dialogCancel);
+        TextView cancelDialog = view.findViewById(R.id.dialogCancel);
         cancelDialog.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -50,7 +49,7 @@ public class ConfirmPasswordDialog extends DialogFragment {
             }
         });
 
-        confirmDialog = view.findViewById(R.id.dialogConfirm);
+        TextView confirmDialog = view.findViewById(R.id.dialogConfirm);
         confirmDialog.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

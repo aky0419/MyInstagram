@@ -273,6 +273,8 @@ public class EditProfileFragment extends Fragment implements ConfirmPasswordDial
         user_account_settings.put("website", website);
         db.collection("user_account_settings").document(mAuth.getUid()).update(user_account_settings);
 
+        Toast.makeText(getActivity(),"Information Saved", Toast.LENGTH_SHORT).show();
+
     }
 
     /**
