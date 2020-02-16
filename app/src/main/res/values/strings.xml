@@ -20,4 +20,5 @@
     <!-- string -->
     <string name="gallery">GALLERY</string>
     <string name="photo">PHOTO</string>
+    <string name="string_open_camera">open camera</string>
 </resources>
