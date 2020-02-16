@@ -6,19 +6,26 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TableLayout;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 
 import com.example.instagramclone.R;
 import com.example.instagramclone.Utils.BottomNavigationViewHelper;
 import com.example.instagramclone.Utils.Permissions;
+import com.example.instagramclone.Utils.SectionsPagerAdapter;
+import com.google.android.material.tabs.TabLayout;
 import com.ittianyu.bottomnavigationviewex.BottomNavigationViewEx;
 
 public class ShareActivity extends AppCompatActivity {
     private static final String TAG = "ShareActivity";
     private Context mContext = ShareActivity.this;
+    private ViewPager mViewPager;
 
 
     //constants
@@ -27,18 +34,41 @@ public class ShareActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home);
+        setContentView(R.layout.activity_share);
         Log.d(TAG, "onCreate: started.");
         
         if(checkPermissionsArray(Permissions.PERMISSIONS)){
+
+            setupViewPager();
 
         } else {
             verifyPermissions(Permissions.PERMISSIONS);
         }
 
-        setupBottomNavigationView();
+        //setupBottomNavigationView();
     }
 
+    private void setupViewPager() {
+        SectionsPagerAdapter adapter = new SectionsPagerAdapter(getSupportFragmentManager(), FragmentPagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
+        //adapter.addFragment(new GalleryFragment());
+        //adapter.addFragment(new PhotoFragment);
+
+        mViewPager = findViewById(R.id.container);
+        mViewPager.setAdapter(adapter);
+
+        TabLayout tabLayout = findViewById(R.id.tabsBottom);
+        tabLayout.setupWithViewPager(mViewPager);
+
+        tabLayout.getTabAt(0).setText(getString(R.string.gallery));
+        tabLayout.getTabAt(1).setText(getString(R.string.photo));
+    }
+
+
+
+    /**
+     * verify all the permissions passed to the array
+     * @param permissions
+     */
     private void verifyPermissions(String[] permissions) {
         Log.d(TAG, "verifyPermissions: verifying permissions.");
         ActivityCompat.requestPermissions(
