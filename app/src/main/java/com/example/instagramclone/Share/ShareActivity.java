@@ -48,6 +48,20 @@ public class ShareActivity extends AppCompatActivity {
         //setupBottomNavigationView();
     }
 
+
+    /**
+     * return current tab number
+     * 0 = gallery fragment
+     * 1 = photo fragment
+     * @return
+     */
+    public int getCurrentTabNumber() {
+        return mViewPager.getCurrentItem();
+    }
+
+    /**
+     * setup viewpager
+     */
     private void setupViewPager() {
         SectionsPagerAdapter adapter = new SectionsPagerAdapter(getSupportFragmentManager(), FragmentPagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         adapter.addFragment(new GalleryFragment());
@@ -83,7 +97,7 @@ public class ShareActivity extends AppCompatActivity {
      * @param permissions
      * @return
      */
-    private boolean checkPermissionsArray(String[] permissions) {
+    public boolean checkPermissionsArray(String[] permissions) {
 
         Log.d(TAG, "checkPermissionsArray: checking permissions array");
         for (int i=0; i< permissions.length; i++) {
@@ -100,7 +114,7 @@ public class ShareActivity extends AppCompatActivity {
      * @param permission
      * @return
      */
-    private boolean checkPermissions(String permission) {
+    public boolean checkPermissions(String permission) {
         Log.d(TAG, "checkPermissions: checking permission" + permission);
         int checkSelfPermission = ActivityCompat.checkSelfPermission(mContext, permission);
         if (checkSelfPermission != PackageManager.PERMISSION_GRANTED) {
