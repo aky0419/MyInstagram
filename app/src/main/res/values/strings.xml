@@ -21,4 +21,5 @@
     <string name="gallery">GALLERY</string>
     <string name="photo">PHOTO</string>
     <string name="string_open_camera">open camera</string>
+    <string name="string_next">Next</string>
 </resources>
