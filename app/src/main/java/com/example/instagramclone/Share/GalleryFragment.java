@@ -1,7 +1,12 @@
 package com.example.instagramclone.Share;
 
+import android.content.ContentResolver;
+import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,12 +25,18 @@ import androidx.fragment.app.Fragment;
 
 import com.example.instagramclone.R;
 import com.example.instagramclone.Utils.FileSearch;
+import com.example.instagramclone.Utils.GridImageAdapter;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.FailReason;
+import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 
-import java.io.File;
 import java.util.ArrayList;
 
 public class GalleryFragment extends Fragment {
     private static final String TAG= "GalleryFragment";
+    private static final int NUM_GRID_COLUMNS = 3;
+    private static final String mAppend = "file:/";
+
 
     //widgets
     private GridView gridView;
@@ -35,7 +46,7 @@ public class GalleryFragment extends Fragment {
 
     //vars
     private ArrayList<String> directories;
-
+    private String mSelectedImage;
 
     @Nullable
     @Override
@@ -66,7 +77,9 @@ public class GalleryFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "onClick: navigating to the final share screen.");
-
+                Intent intent = new Intent(getActivity(),NextActivity.class);
+                intent.putExtra(getString(R.string.selected_image), mSelectedImage);
+                startActivity(intent);
             }
         });
         
@@ -79,24 +92,51 @@ public class GalleryFragment extends Fragment {
 
     private void init() {
 
-        String CAMERA = getActivity().getExternalFilesDir(Environment.DIRECTORY_DCIM).getPath();
-        String PICTURES = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES).getPath();
+        String CAMERA = Environment.getExternalStorageDirectory().getPath() + "/DCIM/Camera";
+        String PICTURES = Environment.getExternalStorageDirectory().getPath() + "/Download";
+        //check for other folders inside "/storage/emulated/0/pictures"
+//        int permissionCheck1 = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_EXTERNAL_STORAGE);
+//        int permissionCheck2 = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE);
+//        if (permissionCheck1 != PackageManager.PERMISSION_GRANTED || permissionCheck2 != PackageManager.PERMISSION_GRANTED) {
+//           /* ActivityCompat.requestPermissions(this,
+//                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},
+//                    124);*/
+//        }
+//        final String[] columns = { MediaStore.Images.Media.DATA, MediaStore.Images.Media._ID };
+//        ContentResolver resolver = getActivity().getContentResolver();
+//        Cursor cursor = resolver.query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, null, null, MediaStore.Images.Media._ID);
+//        int count = cursor.getCount();
+//        for (int i = 0; i < count; i++) {
+//            cursor.moveToPosition(i);
+//            int dataColumnIndex = cursor.getColumnIndex(MediaStore.Images.Media.DATA);
+//            //Store the path of the image
+//            directories.add(cursor.getString(dataColumnIndex));
+//            Log.i("PATH", cursor.getString(dataColumnIndex));
+//        }
 
-        if (FileSearch.getDirectoryPaths(PICTURES) != null) {
-            directories = FileSearch.getDirectoryPaths(PICTURES);
+        if (FileSearch.getDirectoryPaths(PICTURES) != null){
+            directories. add(PICTURES);
         }
+
+
+
         directories.add(CAMERA);
 
+        ArrayList<String> directoryNames = new ArrayList<>();
+        for (int i = 0; i < directories.size(); i++){
+            directoryNames.add(directories.get(i).replace(Environment.getExternalStorageDirectory().getPath(),""));
+        }
+
         ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(),
-                android.R.layout.simple_spinner_dropdown_item);
+                android.R.layout.simple_spinner_item,directoryNames);
         
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         directorySpinner.setAdapter(adapter);
         
         directorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-
+            setupGridView(directories.get(position));
             }
 
             @Override
@@ -105,6 +145,69 @@ public class GalleryFragment extends Fragment {
             }
         });
 
-        //check for other folders inside "/storage/emulated/0/pictures"
+
+    }
+    private void setupGridView(String selectedDirectory) {
+        Log.d(TAG, "setupGridView: directory chosen " + selectedDirectory );
+
+//        final ArrayList<String> imgURLs = new ArrayList<>();
+//        final String[] columns = { MediaStore.Images.Media.DATA, MediaStore.Images.Media._ID };
+//        ContentResolver resolver = getActivity().getContentResolver();
+//        Cursor cursor = resolver.query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, null, null, MediaStore.Images.Media._ID);
+//        int count = cursor.getCount();
+//        for (int i = 0; i < count; i++) {
+//            cursor.moveToPosition(i);
+//            int dataColumnIndex = cursor.getColumnIndex(MediaStore.Images.Media.DATA);
+//            //Store the path of the image
+//            imgURLs.add(cursor.getString(dataColumnIndex));
+//            Log.i("PATH", imgURLs.get(i));
+//        }
+        final ArrayList<String> imgURLs = FileSearch.getFilePaths(selectedDirectory);
+        //set the grid column width
+        final int gridWidth = getResources().getDisplayMetrics().widthPixels;
+        int imageWidth = gridWidth/NUM_GRID_COLUMNS;
+        gridView.setColumnWidth(imageWidth);
+
+        //use grid adapter to adapt images to gridView
+        GridImageAdapter adapter = new GridImageAdapter(getActivity(), R.layout.layout_grid_imageview, mAppend, imgURLs);
+        gridView.setAdapter(adapter);
+
+        //set the first image to be displayed when the activity fragment view is inflated
+        setImage(imgURLs.get(0), galleryImageView);
+        mSelectedImage = mAppend + imgURLs.get(0);
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                setImage(imgURLs.get(position),galleryImageView);
+                mSelectedImage = mAppend + imgURLs.get(position);
+            }
+        });
+    }
+
+    private void setImage(String imgURL, ImageView image) {
+        Log.d(TAG, "setImage: setting image.");
+        ImageLoader imageLoader = ImageLoader.getInstance();
+        imageLoader.displayImage(mAppend + imgURL, image, new ImageLoadingListener() {
+            @Override
+            public void onLoadingStarted(String imageUri, View view) {
+                mProgressBar.setVisibility(View.VISIBLE);
+
+            }
+
+            @Override
+            public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
+                mProgressBar.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                mProgressBar.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onLoadingCancelled(String imageUri, View view) {
+                mProgressBar.setVisibility(View.GONE);
+            }
+        });
     }
 }

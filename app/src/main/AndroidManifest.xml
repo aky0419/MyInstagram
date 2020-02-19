@@ -14,6 +14,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:name="androidx.multidex.MultiDexApplication"
+        android:requestLegacyExternalStorage="true"
         >
         <activity android:name=".Profile.AccountSettingActivity"></activity>
         <activity android:name=".Home.HomeActivity">
@@ -29,6 +30,7 @@
         <activity android:name=".Share.ShareActivity" />
         <activity android:name=".login.LoginActivity"/>
         <activity android:name=".login.RegisterActivity"/>
+        <activity android:name=".Share.NextActivity"/>
     </application>
 
 </manifest>

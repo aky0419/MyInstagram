@@ -1,5 +1,10 @@
 package com.example.instagramclone.Utils;
 
+import android.app.Activity;
+import android.database.Cursor;
+import android.net.Uri;
+import android.provider.MediaStore;
+
 import java.io.File;
 import java.util.ArrayList;
 
@@ -22,6 +27,7 @@ public class FileSearch {
         return pathArray;
     }
 
+
     /**
      * Search a directory and return a list of all **files** contained inside
      */
@@ -37,4 +43,6 @@ public class FileSearch {
 
         return pathArray;
     }
+
+
 }
