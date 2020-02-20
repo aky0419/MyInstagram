@@ -43,6 +43,7 @@ public class GalleryFragment extends Fragment {
     private ImageView galleryImageView, shareClose;
     private ProgressBar mProgressBar;
     private Spinner directorySpinner;
+    TextView nextScreen;
 
     //vars
     private ArrayList<String> directories;
@@ -72,7 +73,7 @@ public class GalleryFragment extends Fragment {
             }
         });
 
-        TextView nextScreen = view.findViewById(R.id.tvNext);
+        nextScreen = view.findViewById(R.id.tvNext);
         nextScreen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
