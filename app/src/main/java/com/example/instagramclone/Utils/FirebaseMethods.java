@@ -48,7 +48,24 @@ public class FirebaseMethods  {
         }
     }
 
+public  void getImageCount(final Callback cb) {
+    final CollectionReference usersRef = db.collection("photos");
+        Query query = usersRef.whereEqualTo("user_id",mAuth.getCurrentUser().getUid());
+        query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if(task.isSuccessful()) {
+                     int imageCount = task.getResult().size();
+                     cb.onSuccess(imageCount);
+                }
+            }
+        });
 
+}
+
+ public interface Callback {
+        public void onSuccess(Object obj);
+ }
 
     public void updateUsername(String username) {
         Log.d(TAG, "updateUsername: updating username to: " + username);

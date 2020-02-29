@@ -12,14 +12,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.example.instagramclone.R;
+import com.example.instagramclone.Utils.FirebaseMethods;
 import com.example.instagramclone.Utils.StringManipulation;
 import com.example.instagramclone.Utils.UniversalImageLoader;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.Map;
 import java.util.zip.Inflater;
@@ -27,16 +31,19 @@ import java.util.zip.Inflater;
 public class NextActivity extends AppCompatActivity {
     private static final String TAG = "NextActivity";
     private static final String mAppend = "file:/";
+    private int imageCount = 0;
     //firebase
     private FirebaseAuth mAuth;
     private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mReference;
     private FirebaseFirestore db;
+    private FirebaseMethods firebaseMethods;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_next);
+        firebaseMethods = new FirebaseMethods(NextActivity.this);
 
         //setupFirebaseAuth();
 
@@ -56,11 +63,45 @@ public class NextActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Log.d(TAG, "onClick: navigating to the final share screen.");
                //upload the image to firebase
+                sharePhoto();
             }
         });
 
 
         setupImage();
+    }
+
+    private void sharePhoto() {
+        /*
+        Step 1)
+        Create a data model for Photos
+
+        Step 2)
+        Add properties to the Photo Objects (Caption, date, imageUrl, photo_id, tags, user_id)
+
+        Step 3)
+        Count the number of photos that the user already have
+
+        step 4)
+        a) Upload the photo to Firebase Storage
+        b) insert into 'photo' node
+        c) insert into 'user_photo' node
+         */
+firebaseMethods.getImageCount(new FirebaseMethods.Callback() {
+    @Override
+    public void onSuccess(Object obj) {
+        int imageCount = (int) obj;
+        Log.d(TAG, "onSuccess: image count: " + imageCount );
+
+    }
+});
+
+    }
+    private void uploadImageToStorage() {
+       // StorageReference storageRef = storage.getReference();
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        final StorageReference storageRef = storage.getReference();
+
     }
         private void setupImage() {
         Intent intent = getIntent();
@@ -70,83 +111,58 @@ public class NextActivity extends AppCompatActivity {
 
         }
 
-////------------------------------------Firebase----------------------------------------------
+//------------------------------------Firebase----------------------------------------------
+
+
+    //Set up firebase authentication object
+    public void setupFirebaseAuth() {
+        Log.d(TAG, "setupFirebaseAuth: setting up firebase auth.");
+        // Initialize Firebase Auth
+        mAuth = FirebaseAuth.getInstance();
+        mFirebaseDatabase = FirebaseDatabase.getInstance();
+        db = FirebaseFirestore.getInstance();
+
+
+        /*
+         * Retrieves the account settings for the user currently logged in
+         * Database: user_account_settings node
+         */
+
+
+
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        // Check if user is signed in (non-null) and update UI accordingly.
+        //FirebaseUser currentUser = mAuth.getCurrentUser();
+        setupFirebaseAuth();
+        // check if user is logged in
+        // checkCurrentUser(currentUser);
+
+//        if (currentUser == null) {
+//            mAuth.signInWithEmailAndPassword("kenchan52016@yahoo.com","123456")
+//                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+//                        @Override
+//                        public void onComplete(@NonNull Task<AuthResult> task) {
+//                            if (task.isSuccessful()) {
+//                                // Sign in success, update UI with the signed-in user's information
+//                                Log.d(TAG, "createUserWithEmail:success");
+//
+//                            } else {
+//                                // If sign in fails, display a message to the user.
+//                                Log.w(TAG, "createUserWithEmail:failure", task.getException());
 //
 //
-//    //Set up firebase authentication object
-//    public void setupFirebaseAuth() {
-//        Log.d(TAG, "setupFirebaseAuth: setting up firebase auth.");
-//        // Initialize Firebase Auth
-//        mAuth = FirebaseAuth.getInstance();
-//        mFirebaseDatabase = FirebaseDatabase.getInstance();
-//        db = FirebaseFirestore.getInstance();
-//        /*
-//         * Retrieves the account settings for the user currently logged in
-//         * Database: user_account_settings node
-//         */
-//
-//        db.collection("user_account_settings")
-//                .document(mAuth.getUid()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-//            @Override
-//            public void onSuccess(DocumentSnapshot documentSnapshot) {
-//
-//                Map<String, Object> doc = documentSnapshot.getData();
-//                Log.d(TAG, "onSuccess: setting widgets with data retrieving from firebase database: "+ doc.get("profile_photo"));
-//
-//                UniversalImageLoader.setImage(doc.get("profile_photo").toString(),mProfilePhoto,null,"");
-//
-//                mDescription.setText(doc.get("description").toString());
-//
-//                String username = StringManipulation.expandUsername(doc.get("username").toString());
-//                mUsername.setText(username);
-//
-//                mWebsite.setText(doc.get("website").toString());
-//                mFollowers.setText(doc.get("followers").toString());
-//                mFollowing.setText(doc.get("following").toString());
-//                mPosts.setText(doc.get("posts").toString());
-//                mDisplayName.setText(doc.get("display_name").toString());
-//
-//                mProgressBar.setVisibility(View.GONE);
+//                            }
+//                        }
+//                    });
 //
 //
-//            }
-//        });
-//
-//
-//
-//    }
-//
-//    @Override
-//    public void onStart() {
-//        super.onStart();
-//        // Check if user is signed in (non-null) and update UI accordingly.
-//        //FirebaseUser currentUser = mAuth.getCurrentUser();
-//        setupFirebaseAuth();
-//        // check if user is logged in
-//        // checkCurrentUser(currentUser);
-//
-////        if (currentUser == null) {
-////            mAuth.signInWithEmailAndPassword("kenchan52016@yahoo.com","123456")
-////                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-////                        @Override
-////                        public void onComplete(@NonNull Task<AuthResult> task) {
-////                            if (task.isSuccessful()) {
-////                                // Sign in success, update UI with the signed-in user's information
-////                                Log.d(TAG, "createUserWithEmail:success");
-////
-////                            } else {
-////                                // If sign in fails, display a message to the user.
-////                                Log.w(TAG, "createUserWithEmail:failure", task.getException());
-////
-////
-////                            }
-////                        }
-////                    });
-////
-////
-////        }
-//
-//    }
+//        }
+
+    }
 }
 
 

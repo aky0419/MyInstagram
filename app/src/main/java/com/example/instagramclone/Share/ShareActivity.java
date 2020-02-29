@@ -30,7 +30,7 @@ public class ShareActivity extends AppCompatActivity {
 
     //constants
     private static final int VERIFY_PERMISSIONS_REQUEST =1;
-    private static final int ACTIVITY_NUM = 3;
+    private static final int ACTIVITY_NUM = 2;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
