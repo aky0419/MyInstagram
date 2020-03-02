@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
+import com.example.instagramclone.Models.Photo;
 import com.example.instagramclone.R;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -21,7 +22,10 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -32,9 +36,13 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
+import java.util.TimeZone;
 
 public class FirebaseMethods  {
     private static final String TAG = "FirebaseMethods";
@@ -61,7 +69,7 @@ public class FirebaseMethods  {
         }
     }
 
-    public void uploadImageToStorage(final ImageView imageShare) {
+    public void uploadImageToStorage(final ImageView imageShare, final String caption) {
         // StorageReference storageRef = storage.getReference();
         mStorageRef = FirebaseStorage.getInstance().getReference();
 
@@ -110,7 +118,8 @@ public class FirebaseMethods  {
                                 Toast.makeText(mContext,"photo upload success", Toast.LENGTH_SHORT).show();
 
                                 // add the new photo to 'photos' node
-                                addPhotoToDatabase(caption, uri);
+                                String url = uri.toString();
+                                addPhotoToDatabase(caption, url);
 
 
                             }
@@ -142,8 +151,31 @@ public class FirebaseMethods  {
     }
 
     private void addPhotoToDatabase (String caption, String url) {
+        Log.d(TAG, "addPhotoToDatabase: adding photo to database.");
 
+
+        String tags = StringManipulation.getTags(caption);
+
+
+        String newPhotoKey = StringManipulation.generateRandomChars();
+        Photo photo = new Photo();
+        photo.setCaption(caption);
+        photo.setImage_path(url);
+        photo.setDate_created(getTimestamp());
+        photo.setTags(tags);
+        photo.setUser_id(mAuth.getCurrentUser().getUid());
+        photo.setPhoto_id(newPhotoKey);
+
+        //insert into database
+        db.collection(mContext.getString(R.string.dbname_photos)).document(photo.getPhoto_id()).set(photo);
     }
+
+    private String getTimestamp() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-mm-dd'T'HH:mm:ss'Z'", Locale.US);
+        sdf.setTimeZone(TimeZone.getTimeZone("America/Monterrey"));
+        return sdf.format(new Date());
+    }
+
     public  void getImageCount(final Callback cb) {
     final CollectionReference usersRef = db.collection("photos");
         Query query = usersRef.whereEqualTo("user_id",mAuth.getCurrentUser().getUid());

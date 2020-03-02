@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -49,10 +50,14 @@ public class NextActivity extends AppCompatActivity {
     private DatabaseReference mReference;
     private FirebaseFirestore db;
     private FirebaseMethods firebaseMethods;
+    private FirebaseDatabase database;
+    private DatabaseReference myRef;
 
 
-    //widges
+    //widges + var
     ImageView imageShare;
+    EditText description;
+    String caption;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -60,6 +65,9 @@ public class NextActivity extends AppCompatActivity {
         setContentView(R.layout.activity_next);
         imageShare = findViewById(R.id.imageShare);
         firebaseMethods = new FirebaseMethods(NextActivity.this);
+        description = findViewById(R.id.description);
+
+
 
         //setupFirebaseAuth();
 
@@ -82,7 +90,9 @@ public class NextActivity extends AppCompatActivity {
                //upload the image to firebase
                 sharePhoto();
                 Toast.makeText(NextActivity.this, "Attempting to upload new photo",Toast.LENGTH_SHORT).show();
-                firebaseMethods.uploadImageToStorage(imageShare);
+
+                caption = description.getText().toString();
+                firebaseMethods.uploadImageToStorage(imageShare, caption);
             }
         });
 
@@ -134,6 +144,7 @@ firebaseMethods.getImageCount(new FirebaseMethods.Callback() {
         mAuth = FirebaseAuth.getInstance();
         mFirebaseDatabase = FirebaseDatabase.getInstance();
         db = FirebaseFirestore.getInstance();
+
 
 
         /*

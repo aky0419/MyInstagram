@@ -1,20 +1,24 @@
 package com.example.instagramclone.Models;
 
+import android.net.Uri;
+
 public class Photo {
 
     private String caption;
     private String date_created;
     private String image_path;
+    private String photo_id;
     private String user_id;
     private String tags;
 
     public Photo() {
     }
 
-    public Photo(String caption, String date_created, String image_path, String user_id, String tags) {
+    public Photo(String caption, String date_created, String image_path, String photo_id, String user_id, String tags) {
         this.caption = caption;
         this.date_created = date_created;
         this.image_path = image_path;
+        this.photo_id = photo_id;
         this.user_id = user_id;
         this.tags = tags;
     }
@@ -43,6 +47,14 @@ public class Photo {
         this.image_path = image_path;
     }
 
+    public String getPhoto_id() {
+        return photo_id;
+    }
+
+    public void setPhoto_id(String photo_id) {
+        this.photo_id = photo_id;
+    }
+
     public String getUser_id() {
         return user_id;
     }
@@ -65,6 +77,7 @@ public class Photo {
                 "caption='" + caption + '\'' +
                 ", date_created='" + date_created + '\'' +
                 ", image_path='" + image_path + '\'' +
+                ", photo_id='" + photo_id + '\'' +
                 ", user_id='" + user_id + '\'' +
                 ", tags='" + tags + '\'' +
                 '}';
