@@ -1,12 +1,17 @@
 package com.example.instagramclone.Share;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -15,6 +20,7 @@ import com.example.instagramclone.R;
 import com.example.instagramclone.Utils.FirebaseMethods;
 import com.example.instagramclone.Utils.StringManipulation;
 import com.example.instagramclone.Utils.UniversalImageLoader;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
@@ -24,14 +30,19 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.util.Map;
+import java.util.Random;
 import java.util.zip.Inflater;
 
 public class NextActivity extends AppCompatActivity {
     private static final String TAG = "NextActivity";
     private static final String mAppend = "file:/";
     private int imageCount = 0;
+    String imgURL;
     //firebase
     private FirebaseAuth mAuth;
     private FirebaseDatabase mFirebaseDatabase;
@@ -39,10 +50,15 @@ public class NextActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private FirebaseMethods firebaseMethods;
 
+
+    //widges
+    ImageView imageShare;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_next);
+        imageShare = findViewById(R.id.imageShare);
         firebaseMethods = new FirebaseMethods(NextActivity.this);
 
         //setupFirebaseAuth();
@@ -58,17 +74,20 @@ public class NextActivity extends AppCompatActivity {
         });
 
         TextView share = findViewById(R.id.tvShare);
+
         share.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "onClick: navigating to the final share screen.");
                //upload the image to firebase
                 sharePhoto();
+                Toast.makeText(NextActivity.this, "Attempting to upload new photo",Toast.LENGTH_SHORT).show();
+                firebaseMethods.uploadImageToStorage(imageShare);
             }
         });
 
-
         setupImage();
+
     }
 
     private void sharePhoto() {
@@ -97,17 +116,11 @@ firebaseMethods.getImageCount(new FirebaseMethods.Callback() {
 });
 
     }
-    private void uploadImageToStorage() {
-       // StorageReference storageRef = storage.getReference();
-        FirebaseStorage storage = FirebaseStorage.getInstance();
-        final StorageReference storageRef = storage.getReference();
 
-    }
         private void setupImage() {
         Intent intent = getIntent();
-        ImageView image = findViewById(R.id.imageShare);
-        String imgURL = intent.getStringExtra(getString(R.string.selected_image));
-        UniversalImageLoader.setImage(imgURL, image, null, "");
+        imgURL = intent.getStringExtra(getString(R.string.selected_image));
+        UniversalImageLoader.setImage(imgURL, imageShare, null, "");
 
         }
 

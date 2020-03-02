@@ -1,13 +1,18 @@
 package com.example.instagramclone.Utils;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
 import com.example.instagramclone.R;
+import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -21,7 +26,12 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
+import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -29,12 +39,15 @@ import java.util.Random;
 public class FirebaseMethods  {
     private static final String TAG = "FirebaseMethods";
 
+    private double mPhotoUploadProgress = 0;
+
 
     //Firebase
     private FirebaseAuth mAuth;
     private Context mContext;
     private String userID;
     private FirebaseFirestore db;
+    private StorageReference mStorageRef;
 
 
     public FirebaseMethods(Context mContext) {
@@ -48,7 +61,90 @@ public class FirebaseMethods  {
         }
     }
 
-public  void getImageCount(final Callback cb) {
+    public void uploadImageToStorage(final ImageView imageShare) {
+        // StorageReference storageRef = storage.getReference();
+        mStorageRef = FirebaseStorage.getInstance().getReference();
+
+        // Create a reference to 'images/mountains.jpg'
+
+
+        final String user_id = mAuth.getCurrentUser().getUid();
+        getImageCount(new Callback() {
+            @Override
+            public void onSuccess(Object obj) {
+                int count = (int) obj;
+                final StorageReference ImagesRef = mStorageRef.child("photos/users/" + "/" + user_id + "/photo" + (count+1));
+                // Get the data from an ImageView as bytes
+                Bitmap bitmap = ImageManager.getBitmapImageView(imageShare);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                byte[] data = baos.toByteArray();
+
+                UploadTask uploadTask = ImagesRef.putBytes(data);
+//                uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+//                    @Override
+//                    public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+//                       if(! task.isSuccessful()) {
+//                           throw task.getException();
+//                       }
+//                       return
+//                    }
+//                })
+                uploadTask.addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        // Handle unsuccessful uploads
+                        Log.d(TAG, "onFailure: Fail to upload.");
+                        Toast.makeText(mContext,"photo upload failed", Toast.LENGTH_SHORT).show();
+                    }
+                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
+                        // ...
+                        Task<Uri> filebaseUrlTask = ImagesRef.getDownloadUrl();
+                        filebaseUrlTask.addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                Log.d(TAG, "onSuccess: Successfully uploaded " + uri);
+                                Toast.makeText(mContext,"photo upload success", Toast.LENGTH_SHORT).show();
+
+                                // add the new photo to 'photos' node
+                                addPhotoToDatabase(caption, uri);
+
+
+                            }
+                        });
+
+
+
+
+
+                        // navigate to the main feed so the user can see their photo
+                    }
+                }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
+
+                        double progress = (100 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+                        if (progress - 15 > mPhotoUploadProgress) {
+                            Toast.makeText(mContext,"photo upload progress: " + String.format("%.0f", progress) + "%", Toast.LENGTH_SHORT).show();
+                            mPhotoUploadProgress = progress;
+
+                        }
+                        Log.d(TAG, "onProgress: upload progress" + progress + "% done");
+
+                    }
+                });
+            }
+        });
+
+    }
+
+    private void addPhotoToDatabase (String caption, String url) {
+
+    }
+    public  void getImageCount(final Callback cb) {
     final CollectionReference usersRef = db.collection("photos");
         Query query = usersRef.whereEqualTo("user_id",mAuth.getCurrentUser().getUid());
         query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -63,8 +159,9 @@ public  void getImageCount(final Callback cb) {
 
 }
 
- public interface Callback {
-        public void onSuccess(Object obj);
+
+    public interface Callback {
+         void onSuccess(Object obj);
  }
 
     public void updateUsername(String username) {
