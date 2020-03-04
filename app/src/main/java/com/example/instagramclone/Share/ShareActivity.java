@@ -1,6 +1,7 @@
 package com.example.instagramclone.Share;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -77,7 +78,10 @@ public class ShareActivity extends AppCompatActivity {
         tabLayout.getTabAt(1).setText(getString(R.string.photo));
     }
 
-
+    public int getTask() {
+        Log.d(TAG, "getTask: TASK: " + getIntent().getFlags());
+        return getIntent().getFlags();
+    }
 
     /**
      * verify all the permissions passed to the array

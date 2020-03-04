@@ -1,5 +1,6 @@
 package com.example.instagramclone.Profile;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,6 +17,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.instagramclone.Dialogs.ConfirmPasswordDialog;
 import com.example.instagramclone.R;
+import com.example.instagramclone.Share.ShareActivity;
 import com.example.instagramclone.Utils.FirebaseMethods;
 import com.example.instagramclone.Utils.StringManipulation;
 import com.example.instagramclone.Utils.UniversalImageLoader;
@@ -128,7 +130,10 @@ public class EditProfileFragment extends Fragment implements ConfirmPasswordDial
         mChangeProfilePhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                Log.d(TAG, "onClick: changing profile photo");
+                Intent intent = new Intent(getActivity(), ShareActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); //268436456
+                getActivity().startActivity(intent);
             }
         });
 
