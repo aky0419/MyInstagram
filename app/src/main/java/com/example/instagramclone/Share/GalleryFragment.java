@@ -195,12 +195,12 @@ public class GalleryFragment extends Fragment {
 
         //set the first image to be displayed when the activity fragment view is inflated
         setImage(imgURLs.get(0), galleryImageView);
-        mSelectedImage = mAppend + imgURLs.get(0);
+        mSelectedImage =  imgURLs.get(0);
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 setImage(imgURLs.get(position),galleryImageView);
-                mSelectedImage = mAppend + imgURLs.get(position);
+                mSelectedImage =  imgURLs.get(position);
             }
         });
     }

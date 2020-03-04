@@ -73,7 +73,7 @@ public class FirebaseMethods  {
         }
     }
 
-    public void uploadImageToStorage(final String photoType, final ImageView imageShare, final String caption) {
+    public void uploadImageToStorage(final String photoType, final String imageURL, final String caption) {
         // StorageReference storageRef = storage.getReference();
         mStorageRef = FirebaseStorage.getInstance().getReference();
 
@@ -84,11 +84,12 @@ public class FirebaseMethods  {
         getImageCount(new Callback() {
             @Override
             public void onSuccess(Object obj) {
+
                 if(photoType.equals(mContext.getString(R.string.new_photo))) {
                 int count = (int) obj;
                 final StorageReference ImagesRef = mStorageRef.child("photos/users/" + "/" + user_id + "/photo" + (count+1));
                 // Get the data from an ImageView as bytes
-                Bitmap bitmap = ImageManager.getBitmapImageView(imageShare);
+                Bitmap bitmap = ImageManager.getBitmap(imageURL);
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                 byte[] data = baos.toByteArray();
@@ -143,7 +144,7 @@ public class FirebaseMethods  {
                     Log.d(TAG, "onSuccess: uploading new PROFILE photo");
                     final StorageReference ImagesRef = mStorageRef.child("photos/users/" + "/" + user_id + "/profile_photo");
                     // Get the data from an ImageView as bytes
-                    Bitmap bitmap = ImageManager.getBitmapImageView(imageShare);
+                    Bitmap bitmap = ImageManager.getBitmap(imageURL);
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                     byte[] data = baos.toByteArray();
@@ -173,8 +174,8 @@ public class FirebaseMethods  {
                                     setProfilePhoto(url);
 
                                     //navigate to the main feed so the user can see their photo
-                                    Intent intent = new Intent(mContext, EditProfileFragment.class);
-                                    mContext.startActivity(intent);
+//                                    Intent intent = new Intent(mContext, EditProfileFragment.class);
+//                                    mContext.startActivity(intent);
                                 }
                             });
                         }
