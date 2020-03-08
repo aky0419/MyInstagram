@@ -14,6 +14,7 @@ import androidx.annotation.NonNull;
 
 import com.example.instagramclone.Home.HomeActivity;
 import com.example.instagramclone.Models.Photo;
+import com.example.instagramclone.Profile.AccountSettingActivity;
 import com.example.instagramclone.Profile.EditProfileFragment;
 import com.example.instagramclone.R;
 import com.google.android.gms.tasks.Continuation;
@@ -142,6 +143,11 @@ public class FirebaseMethods  {
 
                 else if (photoType.equals(mContext.getString(R.string.profile_photo))) {
                     Log.d(TAG, "onSuccess: uploading new PROFILE photo");
+
+                    ((AccountSettingActivity)mContext).setViewPager(
+                            ((AccountSettingActivity)mContext).pagerAdapter.getFragmentNumber(mContext.getString(R.string.edit_profile_fragment))
+                    );
+
                     final StorageReference ImagesRef = mStorageRef.child("photos/users/" + "/" + user_id + "/profile_photo");
                     // Get the data from an ImageView as bytes
                     Bitmap bitmap = ImageManager.getBitmap(imageURL);
@@ -172,6 +178,7 @@ public class FirebaseMethods  {
                                     // insert into 'user_account_setting' node
                                     String url = uri.toString();
                                     setProfilePhoto(url);
+
 
                                     //navigate to the main feed so the user can see their photo
 //                                    Intent intent = new Intent(mContext, EditProfileFragment.class);

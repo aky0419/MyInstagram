@@ -134,6 +134,7 @@ public class EditProfileFragment extends Fragment implements ConfirmPasswordDial
                 Intent intent = new Intent(getActivity(), ShareActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); //268436456
                 getActivity().startActivity(intent);
+                getActivity().finish();
             }
         });
 

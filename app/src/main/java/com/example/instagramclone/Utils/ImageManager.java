@@ -37,27 +37,7 @@ public class ImageManager {
         return bitmap;
     }
 
-    private static InputStream getHttpConnection(String urlString) throws IOException {
 
-        InputStream stream = null;
-        URL url = new URL(urlString);
-        URLConnection connection = url.openConnection();
-
-        try {
-            HttpURLConnection httpConnection = (HttpURLConnection) connection;
-            httpConnection.setRequestMethod("GET");
-            httpConnection.connect();
-
-            if (httpConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                stream = httpConnection.getInputStream();
-            }
-        }
-        catch (Exception ex) {
-            ex.printStackTrace();
-            System.out.println("downloadImage" + ex.toString());
-        }
-        return stream;
-    }
 
     public static Bitmap getBitmapImageView(ImageView imageView){
         imageView.setDrawingCacheEnabled(true);

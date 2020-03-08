@@ -31,7 +31,7 @@ public class AccountSettingActivity extends AppCompatActivity {
     private static final String TAG = "AccountSettingActivity";
     private static final int ACTIVITY_NUM = 4;
     private Context mContext;
-    private SectionsStatePagerAdapter pagerAdapter;
+    public SectionsStatePagerAdapter pagerAdapter;
     private ViewPager mViewPager;
     private RelativeLayout mRelativeLayout;
 
@@ -88,14 +88,14 @@ public class AccountSettingActivity extends AppCompatActivity {
 
     }
 
-    private void setViewPager(int fragmentNumber) {
+    public void setViewPager(int fragmentNumber) {
         mRelativeLayout.setVisibility(View.GONE);
         Log.d(TAG, "setViewPager: navigating to fragment number: " + fragmentNumber);
         mViewPager.setAdapter(pagerAdapter);
         mViewPager.setCurrentItem(fragmentNumber);
     }
 
-    private void setupSettingsList() {
+    public void setupSettingsList() {
         Log.d(TAG, "setupSettingsList: initializing 'Account Settings' list.");
         ListView listView = findViewById(R.id.lvAccountSettings);
         ArrayList<String> options = new ArrayList<>();
