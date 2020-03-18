@@ -64,7 +64,7 @@ public class ProfileFragment extends Fragment {
     private GridView gridView;
 
     private Context mContext;
-    private static final int ACTIVITY_NUM = 4;
+    private static final int ACTIVITY_NUM = 3;
 
 
     private static final int NUM_GIRD_COLUMNS = 3;
@@ -95,6 +95,7 @@ public class ProfileFragment extends Fragment {
                 Intent intent = new Intent(mContext, AccountSettingActivity.class);
                 intent.putExtra(getString(R.string.calling_activity), getString(R.string.profile_activity));
                 startActivity(intent);
+                getActivity().overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
 
             }
         });
@@ -142,7 +143,7 @@ public class ProfileFragment extends Fragment {
             }
         });
     }
-    
+
     private void setupToolbar() {
         ((ProfileActivity) getActivity()).setSupportActionBar(toolbar);
         profileMenu.setOnClickListener(new View.OnClickListener() {
@@ -150,6 +151,7 @@ public class ProfileFragment extends Fragment {
             public void onClick(View v) {
                 Log.d(TAG, "onClick: navigating to account settings");
                 Intent intent = new Intent(mContext, AccountSettingActivity.class);
+
 
                 startActivity(intent);
             }
@@ -162,9 +164,10 @@ public class ProfileFragment extends Fragment {
     private void setupBottomNavigationView() {
         Log.d(TAG, "setupBottomNavigationView: setting up BottomNavigationView");
         BottomNavigationViewHelper.setupBottomNavigationView((BottomNavigationViewEx) bottomNavigationView);
-        BottomNavigationViewHelper.enableNavigation(mContext, (BottomNavigationViewEx) bottomNavigationView);
+        BottomNavigationViewHelper.enableNavigation(mContext,getActivity(), (BottomNavigationViewEx) bottomNavigationView);
         Menu menu = bottomNavigationView.getMenu();
         MenuItem menuItem = menu.getItem(ACTIVITY_NUM);
+
         menuItem.setChecked(true);
     }
 
