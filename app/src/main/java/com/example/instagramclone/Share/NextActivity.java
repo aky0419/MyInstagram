@@ -59,6 +59,9 @@ public class NextActivity extends AppCompatActivity {
     EditText description;
     String caption;
 
+    private Intent intent;
+    private Bitmap bitmap;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,7 +95,14 @@ public class NextActivity extends AppCompatActivity {
                 Toast.makeText(NextActivity.this, "Attempting to upload new photo",Toast.LENGTH_SHORT).show();
 
                 caption = description.getText().toString();
-                firebaseMethods.uploadImageToStorage(getString(R.string.new_photo), imgURL, caption);
+                if(intent.hasExtra(getString(R.string.selected_image))) {
+                    imgURL = intent.getStringExtra(getString(R.string.selected_image));
+                    firebaseMethods.uploadImageToStorage(getString(R.string.new_photo), imgURL, caption, null);
+                } else if (intent.hasExtra(getString(R.string.selected_bitmap))) {
+                    bitmap = intent.getParcelableExtra(getString(R.string.selected_bitmap));
+                    firebaseMethods.uploadImageToStorage(getString(R.string.new_photo),null,caption,bitmap);
+                }
+
             }
         });
 
@@ -128,9 +138,20 @@ firebaseMethods.getImageCount(new FirebaseMethods.Callback() {
     }
 
         private void setupImage() {
-        Intent intent = getIntent();
-        imgURL = intent.getStringExtra(getString(R.string.selected_image));
-        UniversalImageLoader.setImage(imgURL, imageShare, null, "");
+        intent = getIntent();
+        if(intent.hasExtra(getString(R.string.selected_image))) {
+            imgURL = intent.getStringExtra(getString(R.string.selected_image));
+            Log.d(TAG, "setupImage: got image URL");
+            UniversalImageLoader.setImage(imgURL, imageShare, null, mAppend);
+        } else if(intent.hasExtra(getString(R.string.selected_bitmap))){
+            bitmap = intent.getParcelableExtra(getString(R.string.selected_bitmap));
+            Log.d(TAG, "setupImage: got new bitmap");
+            imageShare.setImageBitmap(bitmap);
+
+
+
+        }
+
 
         }
 

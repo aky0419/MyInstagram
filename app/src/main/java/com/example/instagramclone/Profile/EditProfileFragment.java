@@ -31,8 +31,11 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.SignInMethodQueryResult;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -187,7 +190,15 @@ public class EditProfileFragment extends Fragment implements ConfirmPasswordDial
          * Retrieves the account settings for the user currently logged in
          * Database: user_account_settings node
          */
-
+        DocumentReference settingsRef = db.collection("user_account_settings").document(mAuth.getUid());
+        settingsRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                if (documentSnapshot.exists()) {
+                    UniversalImageLoader.setImage(documentSnapshot.getData().get("profile_photo").toString(), mProfilePhoto, null, "");
+                }
+            }
+        });
         db.collection("user_account_settings")
                 .document(mAuth.getUid()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
@@ -196,7 +207,7 @@ public class EditProfileFragment extends Fragment implements ConfirmPasswordDial
                 Map<String, Object> doc = documentSnapshot.getData();
                 Log.d(TAG, "onSuccess: setting widgets with data retrieving from firebase database: " + doc.get("user_account_settings"));
 
-                UniversalImageLoader.setImage(doc.get("profile_photo").toString(), mProfilePhoto, null, "");
+
 
                 mDescription.setText(doc.get("description").toString());
 

@@ -74,7 +74,8 @@ public class FirebaseMethods  {
         }
     }
 
-    public void uploadImageToStorage(final String photoType, final String imageURL, final String caption) {
+
+    public void uploadImageToStorage(final String photoType, final String imageURL, final String caption, final Bitmap bitmap) {
         // StorageReference storageRef = storage.getReference();
         mStorageRef = FirebaseStorage.getInstance().getReference();
 
@@ -90,9 +91,13 @@ public class FirebaseMethods  {
                 int count = (int) obj;
                 final StorageReference ImagesRef = mStorageRef.child("photos/users/" + "/" + user_id + "/photo" + (count+1));
                 // Get the data from an ImageView as bytes
-                Bitmap bitmap = ImageManager.getBitmap(imageURL);
+                    Bitmap bm = bitmap;
+                    if (bm == null) {
+                        bm = ImageManager.getBitmap(imageURL);
+                    }
+
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                bm.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                 byte[] data = baos.toByteArray();
 
                 UploadTask uploadTask = ImagesRef.putBytes(data);
@@ -150,9 +155,12 @@ public class FirebaseMethods  {
 
                     final StorageReference ImagesRef = mStorageRef.child("photos/users/" + "/" + user_id + "/profile_photo");
                     // Get the data from an ImageView as bytes
-                    Bitmap bitmap = ImageManager.getBitmap(imageURL);
+                    Bitmap bm = bitmap;
+                    if (bm == null) {
+                        bm = ImageManager.getBitmap(imageURL); //????????????????????????????????
+                    }
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                    bm.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                     byte[] data = baos.toByteArray();
 
                     UploadTask uploadTask = ImagesRef.putBytes(data);

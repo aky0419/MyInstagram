@@ -78,6 +78,7 @@ public class ShareActivity extends AppCompatActivity {
         tabLayout.getTabAt(1).setText(getString(R.string.photo));
     }
 
+    // check to see if intent comes from editProfileActivity or other source
     public int getTask() {
         Log.d(TAG, "getTask: TASK: " + getIntent().getFlags());
         return getIntent().getFlags();

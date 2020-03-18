@@ -7,6 +7,7 @@ import androidx.viewpager.widget.ViewPager;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -66,15 +67,21 @@ public class AccountSettingActivity extends AppCompatActivity {
 
          // if there is an imageUrl attached as an extra, then it was chosen from the gallery/photo fragment
 
-         if (intent.hasExtra(getString(R.string.selected_image))) {
              Log.d(TAG, "getIncomingIntent: new incoming image url");
              if (intent.hasExtra(getString(R.string.return_to_fragment))) {
-                 FirebaseMethods firebaseMethods = new FirebaseMethods(mContext);
-                 String imagePath = intent.getStringExtra(getString(R.string.selected_image));
-                 firebaseMethods.uploadImageToStorage(getString(R.string.profile_photo),imagePath,null);
+                 if (intent.hasExtra(getString(R.string.selected_image))) {
+                     FirebaseMethods firebaseMethods = new FirebaseMethods(mContext);
+                     String imagePath = intent.getStringExtra(getString(R.string.selected_image));
+                     firebaseMethods.uploadImageToStorage(getString(R.string.profile_photo), imagePath, null, null);
+                 } else if (intent.hasExtra(getString(R.string.selected_bitmap))) {
+                     FirebaseMethods firebaseMethods = new FirebaseMethods(mContext);
+                     Bitmap bitmap = intent.getParcelableExtra(getString(R.string.selected_bitmap));
+                     firebaseMethods.uploadImageToStorage(getString(R.string.profile_photo), null, null, bitmap);
+
+                 }
              }
 
-         }
+
          if (intent.hasExtra(getString(R.string.calling_activity))) {
              Log.d(TAG, "getIncomingIntent: received incoming intent from " + getString(R.string.profile_activity));
              setViewPager(pagerAdapter.getFragmentNumber(getString(R.string.edit_profile_fragment)));
