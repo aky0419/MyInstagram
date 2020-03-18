@@ -20,9 +20,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 
+import com.example.instagramclone.Models.Photo;
 import com.example.instagramclone.R;
 import com.example.instagramclone.Utils.BottomNavigationViewHelper;
 
+import com.example.instagramclone.Utils.GridImageAdapter;
 import com.example.instagramclone.Utils.StringManipulation;
 import com.example.instagramclone.Utils.UniversalImageLoader;
 import com.example.instagramclone.login.LoginActivity;
@@ -34,13 +36,17 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.ittianyu.bottomnavigationviewex.BottomNavigationViewEx;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -93,6 +99,7 @@ public class ProfileFragment extends Fragment {
             }
         });
 
+  
 
         gridView = view.findViewById(R.id.gridView);
         mProgressBar = view.findViewById(R.id.profileProgressBar);
@@ -104,15 +111,38 @@ public class ProfileFragment extends Fragment {
 
         Log.d(TAG, "onCreateView: started.");
 
-
+        setupFirebaseAuth();
         setupBottomNavigationView();
         setupToolbar();
+        setupGridView();
 
 
         return view;
     }
 
+    private void setupGridView() {
+        Log.d(TAG, "setupGridView: Setting up image grid.");
 
+        final ArrayList<String> imgUrl = new ArrayList<>();
+        final CollectionReference photosRef = db.collection("photos");
+        Query query = photosRef.whereEqualTo("user_id", mAuth.getUid());
+        query.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                List<DocumentSnapshot> documents = queryDocumentSnapshots.getDocuments();
+                for (int i=0; i<documents.size(); i++) {
+                    imgUrl.add(documents.get(i).get("image_path").toString());
+                }
+                int gridWidth = getResources().getDisplayMetrics().widthPixels;
+                int imageWidth = gridWidth/NUM_GIRD_COLUMNS;
+                gridView.setColumnWidth(imageWidth);
+
+                GridImageAdapter adapter = new GridImageAdapter(mContext,R.layout.layout_grid_imageview, "", imgUrl);
+                gridView.setAdapter(adapter);
+            }
+        });
+    }
+    
     private void setupToolbar() {
         ((ProfileActivity) getActivity()).setSupportActionBar(toolbar);
         profileMenu.setOnClickListener(new View.OnClickListener() {
