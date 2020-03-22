@@ -31,6 +31,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:id="@+id/tvBackLabel"
                     android:textSize="20dp"
                     android:text="Ashlee.Zheng"
                     android:layout_toRightOf="@id/profile_photo"
