@@ -15,19 +15,35 @@ import android.widget.ProgressBar;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.example.instagramclone.R;
 import com.example.instagramclone.Utils.BottomNavigationViewHelper;
 import com.example.instagramclone.Utils.GridImageAdapter;
 import com.example.instagramclone.Utils.UniversalImageLoader;
+import com.example.instagramclone.ViewPostFragment;
 import com.ittianyu.bottomnavigationviewex.BottomNavigationViewEx;
 
 import java.util.ArrayList;
 
 
-public class ProfileActivity extends AppCompatActivity {
+public class ProfileActivity extends AppCompatActivity implements ProfileFragment.OnGridImageSelectedListener{
     private static final String TAG = "ProfileActivity";
+    @Override
+    public void onGridImageSelected(String imgUrl, int activityNumber) {
+        ViewPostFragment viewPostFragment = new ViewPostFragment();
+        Bundle arg = new Bundle();
+        arg.putString(getString(R.string.image_url), imgUrl);
+        arg.putInt(getString(R.string.activity_number), activityNumber);
+        viewPostFragment.setArguments(arg);
+
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.container, viewPostFragment);
+        transaction.commit();
+
+    }
+
     private Context mContext = ProfileActivity.this;
     private static final int ACTIVITY_NUM = 4;
     private ImageView profileMenu;
@@ -132,5 +148,6 @@ public class ProfileActivity extends AppCompatActivity {
         MenuItem menuItem = menu.getItem(ACTIVITY_NUM);
         menuItem.setChecked(true);
     }
+
 
 }

@@ -32,4 +32,6 @@
     <string name="dbname_user_account_settings">user_account_settings</string>
     <string name="return_to_fragment">return_to_fragment</string>
     <string name="selected_bitmap">selected_bitmap</string>
+    <string name="image_url">image_url</string>
+    <string name="activity_number">activity_number</string>
 </resources>
