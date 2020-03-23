@@ -57,7 +57,7 @@ public class ProfileFragment extends Fragment {
     private static final String TAG = "ProfileFragment";
 
     public interface OnGridImageSelectedListener{
-        void onGridImageSelected(String imgUrl, int activityNumber);
+        void onGridImageSelected(Photo photo, int activityNumber);
     }
     OnGridImageSelectedListener onGridImageSelectedListener;
 
@@ -142,15 +142,21 @@ public class ProfileFragment extends Fragment {
     private void setupGridView() {
         Log.d(TAG, "setupGridView: Setting up image grid.");
 
+        final ArrayList<Photo> photos = new ArrayList<>();
+
         final ArrayList<String> imgUrl = new ArrayList<>();
         final CollectionReference photosRef = db.collection("photos");
-        Query query = photosRef.whereEqualTo("user_id", mAuth.getUid());
+        final Query query = photosRef.whereEqualTo("user_id", mAuth.getUid());
         query.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+
                 List<DocumentSnapshot> documents = queryDocumentSnapshots.getDocuments();
                 for (int i=0; i<documents.size(); i++) {
                     imgUrl.add(documents.get(i).get("image_path").toString());
+                    photos.add(documents.get(i).toObject(Photo.class));
+
+
                 }
                 int gridWidth = getResources().getDisplayMetrics().widthPixels;
                 int imageWidth = gridWidth/NUM_GIRD_COLUMNS;
@@ -161,7 +167,7 @@ public class ProfileFragment extends Fragment {
                 gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        onGridImageSelectedListener.onGridImageSelected(imgUrl.get(position), ACTIVITY_NUM );
+                        onGridImageSelectedListener.onGridImageSelected(photos.get(position), ACTIVITY_NUM );
                     }
                 });
             }

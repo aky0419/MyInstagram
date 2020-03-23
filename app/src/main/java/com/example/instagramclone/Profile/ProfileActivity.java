@@ -18,6 +18,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.example.instagramclone.Models.Photo;
 import com.example.instagramclone.R;
 import com.example.instagramclone.Utils.BottomNavigationViewHelper;
 import com.example.instagramclone.Utils.GridImageAdapter;
@@ -31,10 +32,10 @@ import java.util.ArrayList;
 public class ProfileActivity extends AppCompatActivity implements ProfileFragment.OnGridImageSelectedListener{
     private static final String TAG = "ProfileActivity";
     @Override
-    public void onGridImageSelected(String imgUrl, int activityNumber) {
+    public void onGridImageSelected(Photo photo, int activityNumber) {
         ViewPostFragment viewPostFragment = new ViewPostFragment();
         Bundle arg = new Bundle();
-        arg.putString(getString(R.string.image_url), imgUrl);
+        arg.putParcelable(getString(R.string.photo),photo);
         arg.putInt(getString(R.string.activity_number), activityNumber);
         viewPostFragment.setArguments(arg);
 

@@ -246,8 +246,8 @@ public class FirebaseMethods  {
     }
 
     private String getTimestamp() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-mm-dd'T'HH:mm:ss'Z'", Locale.US);
-        sdf.setTimeZone(TimeZone.getTimeZone("America/Monterrey"));
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-mm-dd 'T' HH:mm 'Z'", Locale.US);
+        sdf.setTimeZone(TimeZone.getTimeZone("US/Pacific"));
         return sdf.format(new Date());
     }
 
