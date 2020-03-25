@@ -50,6 +50,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -79,9 +80,9 @@ public class ViewPostFragment extends Fragment {
     private String mProfileUrl;
     private GestureDetector gestureDetector;
     private Heart heart;
-    private Boolean mLikedByCurrentUser;
-    private List<String> likesString;
-    private Like like;
+    private Boolean mLikedByCurrentUser = false;
+    private List<String> likes;
+    private StringBuilder sb;
 
     //widgets
     private SquareImageView mPostImage;
@@ -93,7 +94,8 @@ public class ViewPostFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_view_post, container, false);
-        likesString = new ArrayList<>();
+
+        likes = new ArrayList<>();
         mContext = getActivity();
         mLikes = view.findViewById(R.id.image_likes);
         mPostImage = view.findViewById(R.id.post_image);
@@ -108,8 +110,7 @@ public class ViewPostFragment extends Fragment {
         mHeartWhite = view.findViewById(R.id.image_heart);
         mProfileImage = view.findViewById(R.id.profile_photo);
 
-        mHearRed.setVisibility(View.GONE);
-        mHeartWhite.setVisibility(View.VISIBLE);
+
         gestureDetector = new GestureDetector(getActivity(), new GestureListener());
         heart = new Heart(mHeartWhite, mHearRed);
 
@@ -128,72 +129,52 @@ public class ViewPostFragment extends Fragment {
         setupBottomNavigationView();
         getPhotoDetails();
 
-        testToggle();
 
         return view;
     }
 
 
-    @SuppressLint("ClickableViewAccessibility")
-    private void testToggle() {
-        mHearRed.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                Log.d(TAG, "onTouch: red heart touch detected.");
-                return gestureDetector.onTouchEvent(event);
-            }
-        });
-
-        mHeartWhite.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                Log.d(TAG, "onTouch: white heart touch detected.");
-                return gestureDetector.onTouchEvent(event);
-            }
-        });
-
-    }
-
     private void getLikesString() {
-
+        final List<String> likesString = new ArrayList<>();
         CollectionReference photoRef = db.collection(getString(R.string.dbname_photos));
         photoRef.document(photo.getPhoto_id()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
-                final List<String> likes = (List<String>) documentSnapshot.get(getString(R.string.field_likes));
-                if (likes == null) {
-                    return;
-                }
-                for (int i = 0; i < likes.size(); i++) {
-                    if (likes.get(i).equals(mAuth.getUid())) {
-                        mLikedByCurrentUser = true;
-                    } else {
-                        mLikedByCurrentUser = false;
-                    }
+                likes = (List<String>) documentSnapshot.get(getString(R.string.field_likes));
+                if (likes == null || likes.isEmpty()) {
+                    mLikedByCurrentUser = false;
+                    mLikes.setText("");
+                } else {
+                    mLikedByCurrentUser = false;
+                    for (int i = 0; i < likes.size(); i++) {
+                        if (likes.get(i).equals(mAuth.getUid())) {
+                            mLikedByCurrentUser = true;
+                        }
 
-                    CollectionReference usersRef = db.collection(getString(R.string.dbname_uers));
-                    usersRef.document(likes.get(i)).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                        @Override
-                        public void onSuccess(DocumentSnapshot documentSnapshot) {
-                            likesString.add(documentSnapshot.get("username").toString());
-                            StringBuilder sb = new StringBuilder();
-                            sb.append("Liked by ");
+                        CollectionReference usersRef = db.collection(getString(R.string.dbname_uers));
+                        usersRef.document(likes.get(i)).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                            @Override
+                            public void onSuccess(DocumentSnapshot documentSnapshot) {
+
+                                likesString.add(documentSnapshot.get("username").toString());
+                                sb = new StringBuilder();
+                                sb.append("Liked by ");
                                 if (likesString.size() == 1) {
-                                  sb.append(likesString.get(0));
+                                    sb.append(likesString.get(0));
 
                                 } else if (likesString.size() == 2) {
                                     sb.append(likesString.get(0));
                                     sb.append(" and ");
                                     sb.append(likesString.get(1));
 
-                                }else if (likesString.size() == 3) {
+                                } else if (likesString.size() == 3) {
                                     sb.append(likesString.get(0));
                                     sb.append(", ");
                                     sb.append(likesString.get(1));
                                     sb.append(" and ");
                                     sb.append(likesString.get(2));
 
-                                }else if (likesString.size() > 3) {
+                                } else if (likesString.size() > 3) {
                                     int n = likesString.size() - 3;
                                     sb.append(likesString.get(0));
                                     sb.append(", ");
@@ -205,12 +186,14 @@ public class ViewPostFragment extends Fragment {
                                     sb.append(" others");
 
                                 }
+                                mLikes.setText(sb.toString());
 
-                                    mLikes.setText(sb.toString());
-                        }
-                    });
+                            }
+                        });
+                    }
+
                 }
-
+                setupWidgets();
             }
         });
     }
@@ -224,25 +207,76 @@ public class ViewPostFragment extends Fragment {
 
         @Override
         public boolean onDoubleTap(MotionEvent e) {
-            CollectionReference photoDocRef = db.collection(getString(R.string.dbcollection_photos));
-            final DocumentReference documentReference = photoDocRef.document(photo.getPhoto_id());
-            documentReference.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            final DocumentReference photoDocRef = db.collection(getString(R.string.dbcollection_photos)).document(photo.getPhoto_id());
+
+            photoDocRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                 @Override
                 public void onSuccess(DocumentSnapshot documentSnapshot) {
 
-                    List<String> likes = (List<String>) documentSnapshot.get(getString(R.string.field_likes));
-                    for (int i = 0; i < likes.size(); i++) {
+                    likes = (List<String>) documentSnapshot.get(getString(R.string.field_likes));
+                    if (likes == null) {
+                        //add new like
+                        addNewLike();
+                        heart.toggleLike();
+
+                    } else {
+                        if (likes.contains(mAuth.getUid())) {
+                            int idx = likes.indexOf(mAuth.getUid());
+                            likes.remove(idx);
+                            Map<String, Object> updates = new HashMap<>();
+                            updates.put(getString(R.string.field_likes), likes);
+                            photoDocRef.update(updates).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    heart.toggleLike();
+
+                                    getLikesString();
+
+                                }
+                            });
+                        } else {
+                            heart.toggleLike();
+                            addNewLike();
+                        }
 
                     }
                 }
             });
 
             Log.d(TAG, "onDoubleTap: double tap detected.");
-            heart.toggleLike();
+
             return true;
         }
     }
 
+
+    private void addNewLike() {
+        Log.d(TAG, "addNewLike: adding new like");
+        final Like like = new Like();
+        like.setUser_id(mAuth.getCurrentUser().getUid());
+        final DocumentReference photoDocRef = db.collection(getString(R.string.dbcollection_photos)).document(photo.getPhoto_id());
+        photoDocRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+
+                likes = (List<String>) documentSnapshot.get(getString(R.string.field_likes));
+                likes.add(like.getUser_id());
+                Map<String, Object> updates = new HashMap<>();
+                updates.put(getString(R.string.field_likes), likes);
+                photoDocRef.update(updates).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+
+                        getLikesString();
+
+                    }
+                });
+            }
+        });
+    }
+
+
+    @SuppressLint("ClickableViewAccessibility")
     private void setupWidgets() {
         String timeStampDiff = getTimeStampDifference();
         if (!timeStampDiff.equals("0")) {
@@ -252,6 +286,32 @@ public class ViewPostFragment extends Fragment {
         }
         UniversalImageLoader.setImage(mProfileUrl, mProfileImage, null, "");
         mBackLabel.setText(username);
+        mCaption.setText(photo.getCaption());
+
+
+        if (mLikedByCurrentUser) {
+            mHeartWhite.setVisibility(View.GONE);
+            mHearRed.setVisibility(View.VISIBLE);
+            mHearRed.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    Log.d(TAG, "onTouch: red heart touch detected.");
+                    return gestureDetector.onTouchEvent(event);
+                }
+            });
+
+
+        } else {
+            mHearRed.setVisibility(View.GONE);
+            mHeartWhite.setVisibility(View.VISIBLE);
+            mHeartWhite.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    Log.d(TAG, "onTouch: white heart touch detected.");
+                    return gestureDetector.onTouchEvent(event);
+                }
+            });
+        }
 
     }
 
@@ -263,7 +323,7 @@ public class ViewPostFragment extends Fragment {
             public void onSuccess(DocumentSnapshot documentSnapshot) {
                 mProfileUrl = documentSnapshot.get("profile_photo").toString();
                 username = documentSnapshot.get("username").toString();
-                setupWidgets();
+
 
             }
         });
