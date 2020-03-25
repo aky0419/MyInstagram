@@ -35,4 +35,7 @@
     <string name="image_url">image_url</string>
     <string name="activity_number">activity_number</string>
     <string name="image_path">image_path</string>
+    <string name="dbcollection_photos">photos</string>
+    <string name="field_likes">likes</string>
+    <string name="dbname_uers">users</string>
 </resources>
