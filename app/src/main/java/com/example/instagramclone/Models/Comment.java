@@ -24,8 +24,7 @@ public class Comment {
         return "Comment{" +
                 "comment='" + comment + '\'' +
                 ", user_id='" + user_id + '\'' +
-                ", likes=" + likes +
-                ", date_created='" + date_created + '\'' +
+                ",  date_created='" + date_created + '\'' +
                 '}';
     }
 

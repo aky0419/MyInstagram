@@ -12,10 +12,12 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -36,6 +38,8 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.ittianyu.bottomnavigationviewex.BottomNavigationViewEx;
 
 import java.lang.reflect.Array;
@@ -49,6 +53,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.concurrent.Callable;
 
 public class ViewCommentsFragment extends Fragment {
     private static final String TAG = "ViewCommentsFragment";
@@ -89,6 +94,8 @@ public class ViewCommentsFragment extends Fragment {
         mComment = view.findViewById(R.id.comment);
         mListView = view.findViewById(R.id.listView);
 
+        setupFirebaseAuth();
+
 
 
 
@@ -104,12 +111,69 @@ public class ViewCommentsFragment extends Fragment {
             CommentListAdapter commentListAdapter = new CommentListAdapter(getActivity(), R.layout.layout_center_comments,comments);
             mListView.setAdapter(commentListAdapter);
 
+            mBackArrow.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    getActivity().getSupportFragmentManager().popBackStack();
+                }
+            });
+            mCheckMark.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (!mComment.getText().toString().equals("")) {
+                        submitNewComment(mComment.getText().toString());
+
+                        mComment.setText("");
+                        closeKeyboard();
+                    } else {
+                        Toast.makeText(getActivity(), "you can't post a blank comment", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+
         } catch (NullPointerException e) {
             Log.e(TAG, "onCreateView: NullPointerException " + e.getMessage() );
         }
 
 
         return view;
+    }
+
+    private void closeKeyboard() {
+        View view = getActivity().getCurrentFocus();
+        if (view!= null) {
+            InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+
+    }
+
+    private void submitNewComment(String newComment) {
+        Log.d(TAG, "submitNewComment: adding a new comment: " + newComment);
+        final Comment comment = new Comment();
+        comment.setComment(newComment);
+        comment.setDate_created(getTimeStamp());
+        comment.setUser_id(mAuth.getCurrentUser().getUid());
+        Map<String, Object> photoComment = new HashMap<>();
+        photoComment.put(getString(R.string.dbname_user_id), comment.getUser_id());
+        photoComment.put(getString(R.string.dbname_comment), comment.getComment());
+        photoComment.put(getString(R.string.dbname_date_created), comment.getDate_created());
+        db.collection(getString(R.string.dbname_photos)).document(photo.getPhoto_id()).collection(getString(R.string.comments)).add(photoComment).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentReference> task) {
+
+                Log.d(TAG, "onComplete: added " + task.isSuccessful());
+            }
+        });
+
+        
+    }
+
+    private String getTimeStamp() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
+        sdf.setTimeZone(TimeZone.getTimeZone("US/Pacific"));
+        return sdf.format(new Date());
+
     }
 
     private Photo getPhotoFromBundle() {
@@ -134,6 +198,21 @@ public class ViewCommentsFragment extends Fragment {
         mFirebaseDatabase = FirebaseDatabase.getInstance();
         db = FirebaseFirestore.getInstance();
 
+
+    }
+    private void getCommentsFromDatabase(){
+        CollectionReference photoRef = db.collection(getString(R.string.photo));
+        final DocumentReference photoDoc = photoRef.document(photo.getPhoto_id());
+        photoDoc.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                Comment comment = new Comment();
+                comment.setUser_id(photo.getUser_id());
+                comment.setDate_created(photo.getDate_created());
+
+
+            }
+        });
     }
 
     @Override

@@ -373,7 +373,7 @@ public class ViewPostFragment extends Fragment {
     private String getTimeStampDifference() {
         String difference = "";
         Calendar calendar = Calendar.getInstance();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-mm-dd 'T' HH:mm 'Z'", Locale.US);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-mm-dd'T'HH:mm:ss'Z' ", Locale.US);
         sdf.setTimeZone(TimeZone.getTimeZone("US/Pacific"));
         Date today = calendar.getTime();
         sdf.format(today);

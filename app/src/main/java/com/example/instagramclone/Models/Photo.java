@@ -14,18 +14,9 @@ public class Photo implements Parcelable {
     private String user_id;
     private String tags;
     private List<String> likes;
+    private List<Comment> Comments;
 
     public Photo() {
-    }
-
-    public Photo(String caption, String date_created, String image_path, String photo_id, String user_id, String tags, List<String> likes) {
-        this.caption = caption;
-        this.date_created = date_created;
-        this.image_path = image_path;
-        this.photo_id = photo_id;
-        this.user_id = user_id;
-        this.tags = tags;
-        this.likes = likes;
     }
 
     @Override
@@ -38,6 +29,7 @@ public class Photo implements Parcelable {
                 ", user_id='" + user_id + '\'' +
                 ", tags='" + tags + '\'' +
                 ", likes=" + likes +
+                ", Comments=" + Comments +
                 '}';
     }
 
@@ -97,8 +89,27 @@ public class Photo implements Parcelable {
         this.likes = likes;
     }
 
+    public List<Comment> getComments() {
+        return Comments;
+    }
+
+    public void setComments(List<Comment> comments) {
+        Comments = comments;
+    }
+
     public static Creator<Photo> getCREATOR() {
         return CREATOR;
+    }
+
+    public Photo(String caption, String date_created, String image_path, String photo_id, String user_id, String tags, List<String> likes, List<Comment> comments) {
+        this.caption = caption;
+        this.date_created = date_created;
+        this.image_path = image_path;
+        this.photo_id = photo_id;
+        this.user_id = user_id;
+        this.tags = tags;
+        this.likes = likes;
+        Comments = comments;
     }
 
     protected Photo(Parcel in) {
@@ -108,6 +119,7 @@ public class Photo implements Parcelable {
         photo_id = in.readString();
         user_id = in.readString();
         tags = in.readString();
+        likes = in.createStringArrayList();
     }
 
     public static final Creator<Photo> CREATOR = new Creator<Photo>() {
@@ -135,7 +147,6 @@ public class Photo implements Parcelable {
         dest.writeString(photo_id);
         dest.writeString(user_id);
         dest.writeString(tags);
+        dest.writeStringList(likes);
     }
-
-
 }

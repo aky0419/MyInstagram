@@ -40,4 +40,9 @@
     <string name="dbname_uers">users</string>
     <string name="view_comments_fragment">View Comments</string>
     <string name="view_post_fragment">View Post</string>
+    <string name="field_photo_id">photo_id</string>
+    <string name="comments">comments</string>
+    <string name="dbname_user_id">user_id</string>
+    <string name="dbname_comment">comment</string>
+    <string name="dbname_date_created">date_created</string>
 </resources>
