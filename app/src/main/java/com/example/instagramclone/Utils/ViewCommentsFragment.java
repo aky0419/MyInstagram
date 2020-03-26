@@ -12,13 +12,16 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.example.instagramclone.Models.Comment;
 import com.example.instagramclone.Models.Like;
 import com.example.instagramclone.Models.Photo;
 import com.example.instagramclone.R;
@@ -35,6 +38,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.ittianyu.bottomnavigationviewex.BottomNavigationViewEx;
 
+import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -64,23 +68,41 @@ public class ViewCommentsFragment extends Fragment {
 
 
     //vars
+
     private Context mContext;
     private Photo photo;
-    private int mActivityNumber = 0;
-    BottomNavigationViewEx bottomNavigationView;
+    private List<Comment> comments;
 
 
     //widgets
-
+    private ImageView mBackArrow, mCheckMark;
+    private EditText mComment;
+    private ListView mListView;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_view_comments, container, false);
         mContext = getActivity();
+        mBackArrow = view.findViewById(R.id.backArrow);
+        mCheckMark = view.findViewById(R.id.ivPostComment);
+        mComment = view.findViewById(R.id.comment);
+        mListView = view.findViewById(R.id.listView);
+
+
+
+
 
         try {
             photo = getPhotoFromBundle();
+            comments = new ArrayList<>();
+            Comment firstComment = new Comment();
+            firstComment.setComment(photo.getCaption());
+            firstComment.setUser_id(photo.getUser_id());
+            firstComment.setDate_created(photo.getDate_created());
+            comments.add(firstComment);
+            CommentListAdapter commentListAdapter = new CommentListAdapter(getActivity(), R.layout.layout_center_comments,comments);
+            mListView.setAdapter(commentListAdapter);
 
         } catch (NullPointerException e) {
             Log.e(TAG, "onCreateView: NullPointerException " + e.getMessage() );

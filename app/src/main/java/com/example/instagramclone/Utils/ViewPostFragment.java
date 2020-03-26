@@ -20,6 +20,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.instagramclone.Models.Like;
 import com.example.instagramclone.Models.Photo;
+import com.example.instagramclone.Profile.ProfileActivity;
 import com.example.instagramclone.R;
 import com.example.instagramclone.Utils.BottomNavigationViewHelper;
 import com.example.instagramclone.Utils.SquareImageView;
@@ -145,6 +146,7 @@ public class ViewPostFragment extends Fragment {
         super.onAttach(context);
         try {
             mOnCommentThreadSelectedListener = (OnCommentThreadSelectedListener) getActivity();
+
 
         } catch (ClassCastException e) {
             Log.e(TAG, "onAttach: ClassCastException " + e.getMessage() );
@@ -318,6 +320,7 @@ public class ViewPostFragment extends Fragment {
             public void onClick(View v) {
                 Log.d(TAG, "onClick: navigating back");
                 mOnCommentThreadSelectedListener.onCommentThreadSelectedListener(photo);
+
 
             }
         });

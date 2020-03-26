@@ -35,8 +35,8 @@ import java.util.TimeZone;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class commentListAdapter extends ArrayAdapter<Comment> {
-    private static final String TAG = "commentListAdapter";
+public class CommentListAdapter extends ArrayAdapter<Comment> {
+    private static final String TAG = "CommentListAdapter";
 
     //firebase
     private FirebaseAuth mAuth;
@@ -50,7 +50,7 @@ public class commentListAdapter extends ArrayAdapter<Comment> {
     private String mProfileUrl;
     private String mUsername;
 
-    public commentListAdapter(@NonNull Context context, int resource, @NonNull List<Comment> objects) {
+    public CommentListAdapter(@NonNull Context context, int resource, @NonNull List<Comment> objects) {
         super(context, resource, objects);
         mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mContext = context;
@@ -113,7 +113,11 @@ public class commentListAdapter extends ArrayAdapter<Comment> {
 
 
 
-
+        if (position == 0) {
+            holder.like.setVisibility(View.GONE);
+            holder.likes.setVisibility(View.GONE);
+            holder.reply.setVisibility(View.GONE);
+        }
 
         return convertView;
     }
