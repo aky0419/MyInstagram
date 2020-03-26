@@ -38,4 +38,6 @@
     <string name="dbcollection_photos">photos</string>
     <string name="field_likes">likes</string>
     <string name="dbname_uers">users</string>
+    <string name="view_comments_fragment">View Comments</string>
+    <string name="view_post_fragment">View Post</string>
 </resources>

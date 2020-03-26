@@ -10,17 +10,21 @@ import android.widget.ProgressBar;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.example.instagramclone.Models.Photo;
 import com.example.instagramclone.R;
 import com.example.instagramclone.Utils.BottomNavigationViewHelper;
+import com.example.instagramclone.Utils.ViewCommentsFragment;
 import com.example.instagramclone.Utils.ViewPostFragment;
 import com.ittianyu.bottomnavigationviewex.BottomNavigationViewEx;
 
 
-public class ProfileActivity extends AppCompatActivity implements ProfileFragment.OnGridImageSelectedListener{
+public class ProfileActivity extends AppCompatActivity implements
+        ProfileFragment.OnGridImageSelectedListener, ViewPostFragment.OnCommentThreadSelectedListener {
     private static final String TAG = "ProfileActivity";
+
     @Override
     public void onGridImageSelected(Photo photo, int activityNumber) {
         ViewPostFragment viewPostFragment = new ViewPostFragment();
@@ -31,10 +35,24 @@ public class ProfileActivity extends AppCompatActivity implements ProfileFragmen
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.container, viewPostFragment);
+        transaction.addToBackStack(getString(R.string.view_post_fragment));
         transaction.commit();
 
     }
 
+    @Override
+    public void onCommentThreadSelectedListener(Photo photo) {
+        ViewCommentsFragment viewCommentsFragment = new ViewCommentsFragment();
+        Bundle arg = new Bundle();
+        arg.putParcelable(getString(R.string.photo), photo);
+        viewCommentsFragment.setArguments(arg);
+
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.container, viewCommentsFragment);
+        transaction.addToBackStack(getString(R.string.view_comments_fragment));
+        transaction.commit();
+
+    }
     private Context mContext = ProfileActivity.this;
     private static final int ACTIVITY_NUM = 4;
     private ImageView profileMenu;
@@ -139,6 +157,7 @@ public class ProfileActivity extends AppCompatActivity implements ProfileFragmen
         MenuItem menuItem = menu.getItem(ACTIVITY_NUM);
         menuItem.setChecked(true);
     }
+
 
 
 }

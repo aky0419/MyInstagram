@@ -59,6 +59,12 @@ import java.util.TimeZone;
 public class ViewPostFragment extends Fragment {
     private static final String TAG = "ViewPostFragment";
 
+    public interface OnCommentThreadSelectedListener{
+        void onCommentThreadSelectedListener (Photo photo);
+
+    }
+    OnCommentThreadSelectedListener mOnCommentThreadSelectedListener;
+
     public ViewPostFragment() {
         super();
         setArguments(new Bundle());
@@ -87,7 +93,7 @@ public class ViewPostFragment extends Fragment {
     //widgets
     private SquareImageView mPostImage;
     TextView mBackLabel, mCaption, mUsername, mTimeStamp, mLikes;
-    ImageView mBackArrow, mEllipses, mHearRed, mHeartWhite, mProfileImage;
+    ImageView mBackArrow, mEllipses, mHearRed, mHeartWhite, mProfileImage, mComment;
     private BottomNavigationViewEx bottomNavigationView;
 
     @Nullable
@@ -109,6 +115,7 @@ public class ViewPostFragment extends Fragment {
         mHearRed = view.findViewById(R.id.image_heart_red);
         mHeartWhite = view.findViewById(R.id.image_heart);
         mProfileImage = view.findViewById(R.id.profile_photo);
+        mComment = view.findViewById(R.id.image_speechBubble);
 
 
         gestureDetector = new GestureDetector(getActivity(), new GestureListener());
@@ -133,6 +140,16 @@ public class ViewPostFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        try {
+            mOnCommentThreadSelectedListener = (OnCommentThreadSelectedListener) getActivity();
+
+        } catch (ClassCastException e) {
+            Log.e(TAG, "onAttach: ClassCastException " + e.getMessage() );
+        }
+    }
 
     private void getLikesString() {
         final List<String> likesString = new ArrayList<>();
@@ -287,6 +304,23 @@ public class ViewPostFragment extends Fragment {
         UniversalImageLoader.setImage(mProfileUrl, mProfileImage, null, "");
         mBackLabel.setText(username);
         mCaption.setText(photo.getCaption());
+
+        mBackArrow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "onClick: navigating back");
+                getActivity().getSupportFragmentManager().popBackStack();
+            }
+        });
+
+        mComment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "onClick: navigating back");
+                mOnCommentThreadSelectedListener.onCommentThreadSelectedListener(photo);
+
+            }
+        });
 
 
         if (mLikedByCurrentUser) {

@@ -3,6 +3,7 @@ package com.example.instagramclone.Utils;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -48,6 +49,11 @@ import java.util.TimeZone;
 public class ViewCommentsFragment extends Fragment {
     private static final String TAG = "ViewCommentsFragment";
 
+    public ViewCommentsFragment() {
+        super();
+        setArguments(new Bundle());
+    }
+
 
 
     //firebase
@@ -73,19 +79,27 @@ public class ViewCommentsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_view_comments, container, false);
         mContext = getActivity();
 
-        setupBottomNavigationView();
+        try {
+            photo = getPhotoFromBundle();
+
+        } catch (NullPointerException e) {
+            Log.e(TAG, "onCreateView: NullPointerException " + e.getMessage() );
+        }
+
+
         return view;
     }
 
-    private void setupBottomNavigationView() {
-        Log.d(TAG, "setupBottomNavigationView: setting up BottomNavigationView");
-        BottomNavigationViewHelper.setupBottomNavigationView(bottomNavigationView);
-        BottomNavigationViewHelper.enableNavigation(mContext, getActivity(), bottomNavigationView);
-        Menu menu = bottomNavigationView.getMenu();
-        MenuItem menuItem = menu.getItem(mActivityNumber);
-
-        menuItem.setChecked(true);
+    private Photo getPhotoFromBundle() {
+        Log.d(TAG, "getPhotoFromBundle: arguments " + getArguments());
+        Bundle arg = this.getArguments();
+        if (arg != null) {
+        return arg.getParcelable(getString(R.string.photo));
+        } else {
+            return null;
+        }
     }
+
 
     //------------------------------------Firebase----------------------------------------------
 
