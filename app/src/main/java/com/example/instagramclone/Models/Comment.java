@@ -1,5 +1,7 @@
 package com.example.instagramclone.Models;
 
+import com.google.firebase.Timestamp;
+
 import java.util.List;
 
 public class Comment {
@@ -7,7 +9,20 @@ public class Comment {
     private String comment;
     private String user_id;
     private List<Like> likes;
+
+
+
     private String date_created;
+
+    public Comment(String comment, String user_id, List<Like> likes, String date_created, Timestamp timestap) {
+        this.comment = comment;
+        this.user_id = user_id;
+        this.likes = likes;
+        this.date_created = date_created;
+        this.timestap = timestap;
+    }
+
+    private Timestamp timestap;
 
     public Comment() {
     }
@@ -59,4 +74,12 @@ public class Comment {
     public void setDate_created(String date_created) {
         this.date_created = date_created;
     }
+    public Timestamp getTimestamp() {
+        return timestap;
+    }
+
+    public void setTimestamp(Timestamp timestap) {
+        this.timestap = timestap;
+    }
+
 }
