@@ -17,10 +17,13 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
+import com.example.instagramclone.Models.Comment;
 import com.example.instagramclone.Models.Photo;
 import com.example.instagramclone.R;
 import com.example.instagramclone.Utils.BottomNavigationViewHelper;
@@ -155,7 +158,24 @@ public class ProfileFragment extends Fragment {
                 for (int i=0; i<documents.size(); i++) {
                     imgUrl.add(documents.get(i).get("image_path").toString());
                     photos.add(documents.get(i).toObject(Photo.class));
-
+                    CollectionReference commentsRef = documents.get(i).getReference().collection("comments");
+                    final int finalI = i;
+                    commentsRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            if (task.isSuccessful()) {
+                                List<DocumentSnapshot> commentsSnapshot = task.getResult().getDocuments();
+                                List<Comment> comments = new ArrayList<>();
+                                for (DocumentSnapshot s : commentsSnapshot) {
+                                    comments.add(s.toObject(Comment.class));
+                                }
+                                photos.get(finalI).setComments(comments);
+                            } else {
+                               new AlertDialog.Builder(getContext())
+                                       .setTitle(task.getException().getLocalizedMessage()).show();
+                            }
+                        }
+                    });
 
                 }
                 int gridWidth = getResources().getDisplayMetrics().widthPixels;

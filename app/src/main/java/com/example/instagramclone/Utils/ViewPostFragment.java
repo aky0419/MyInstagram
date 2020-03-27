@@ -93,7 +93,7 @@ public class ViewPostFragment extends Fragment {
 
     //widgets
     private SquareImageView mPostImage;
-    TextView mBackLabel, mCaption, mUsername, mTimeStamp, mLikes;
+    TextView mBackLabel, mCaption, mUsername, mTimeStamp, mLikes, mComments;
     ImageView mBackArrow, mEllipses, mHearRed, mHeartWhite, mProfileImage, mComment;
     private BottomNavigationViewEx bottomNavigationView;
 
@@ -117,6 +117,7 @@ public class ViewPostFragment extends Fragment {
         mHeartWhite = view.findViewById(R.id.image_heart);
         mProfileImage = view.findViewById(R.id.profile_photo);
         mComment = view.findViewById(R.id.image_speechBubble);
+        mComments = view.findViewById(R.id.image_comments);
 
 
         gestureDetector = new GestureDetector(getActivity(), new GestureListener());
@@ -306,6 +307,19 @@ public class ViewPostFragment extends Fragment {
         UniversalImageLoader.setImage(mProfileUrl, mProfileImage, null, "");
         mBackLabel.setText(username);
         mCaption.setText(photo.getCaption());
+
+        if (photo.getComments() != null && photo.getComments().size()>0) {
+            mComments.setText("View all " + photo.getComments().size() + " comments");
+        } else {
+            mComments.setText("");
+        }
+        mComments.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "onClick: navigating to comments thread");
+                mOnCommentThreadSelectedListener.onCommentThreadSelectedListener(photo);
+            }
+        });
 
         mBackArrow.setOnClickListener(new View.OnClickListener() {
             @Override

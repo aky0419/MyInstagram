@@ -81,6 +81,7 @@ public class ViewCommentsFragment extends Fragment {
         mComment = view.findViewById(R.id.comment);
         mListView = view.findViewById(R.id.listView);
         comments = new ArrayList<>();
+        mContext = getActivity();
 
         setupFirebaseAuth();
 
@@ -104,7 +105,7 @@ public class ViewCommentsFragment extends Fragment {
     private void closeKeyboard() {
         View view = getActivity().getCurrentFocus();
         if (view!= null) {
-            InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+            InputMethodManager imm = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
 
@@ -118,11 +119,11 @@ public class ViewCommentsFragment extends Fragment {
         comment.setTimestamp(new Timestamp(new Date()));
         comment.setUser_id(mAuth.getCurrentUser().getUid());
         Map<String, Object> photoComment = new HashMap<>();
-        photoComment.put(getString(R.string.dbname_user_id), comment.getUser_id());
-        photoComment.put(getString(R.string.dbname_comment), comment.getComment());
-        photoComment.put(getString(R.string.dbname_date_created), comment.getDate_created());
+        photoComment.put(mContext.getString(R.string.dbname_user_id), comment.getUser_id());
+        photoComment.put(mContext.getString(R.string.dbname_comment), comment.getComment());
+        photoComment.put(mContext.getString(R.string.dbname_date_created), comment.getDate_created());
         photoComment.put("timestamp", comment.getTimestamp());
-        db.collection(getString(R.string.dbname_photos)).document(photo.getPhoto_id()).collection(getString(R.string.comments)).add(photoComment).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+        db.collection(mContext.getString(R.string.dbname_photos)).document(photo.getPhoto_id()).collection(mContext.getString(R.string.comments)).add(photoComment).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
             @Override
             public void onComplete(@NonNull Task<DocumentReference> task) {
 
@@ -165,8 +166,8 @@ public class ViewCommentsFragment extends Fragment {
 
     }
     private void getCommentsFromDatabase(){
-        CollectionReference photoRef = db.collection(getString(R.string.dbname_photos));
-        CollectionReference commentRef = photoRef.document(photo.getPhoto_id()).collection(getString(R.string.dbcollection_comments));
+        CollectionReference photoRef = db.collection(mContext.getString(R.string.dbname_photos));
+        CollectionReference commentRef = photoRef.document(photo.getPhoto_id()).collection(mContext.getString(R.string.dbcollection_comments));
 
         commentRef.orderBy("timestamp").addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
@@ -180,13 +181,13 @@ public class ViewCommentsFragment extends Fragment {
 
                 for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
                     Comment comment = new Comment();
-                    comment.setComment(document.get(getString(R.string.dbname_comment)).toString());
-                    comment.setUser_id(document.get(getString(R.string.dbname_user_id)).toString());
-                    comment.setDate_created(document.get(getString(R.string.dbname_date_created)).toString());
+                    comment.setComment(document.get(mContext.getString(R.string.dbname_comment)).toString());
+                    comment.setUser_id(document.get(mContext.getString(R.string.dbname_user_id)).toString());
+                    comment.setDate_created(document.get(mContext.getString(R.string.dbname_date_created)).toString());
                     comments.add(comment);
                 }
                 photo.setComments(comments);
-                CommentListAdapter commentListAdapter = new CommentListAdapter(getActivity(), R.layout.layout_center_comments,comments);
+                CommentListAdapter commentListAdapter = new CommentListAdapter(mContext, R.layout.layout_center_comments,comments);
                 mListView.setAdapter(commentListAdapter);
 
                 mBackArrow.setOnClickListener(new View.OnClickListener() {
@@ -204,7 +205,7 @@ public class ViewCommentsFragment extends Fragment {
                             mComment.setText("");
                             closeKeyboard();
                         } else {
-                            Toast.makeText(getActivity(), "you can't post a blank comment", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(mContext, "you can't post a blank comment", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
