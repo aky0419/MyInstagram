@@ -172,6 +172,7 @@ public class ViewCommentsFragment extends Fragment {
         commentRef.orderBy("timestamp").addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                List<Comment> commentsExcludeFirstOne = new ArrayList<>();
                 comments.clear();
                 Comment firstComment = new Comment();
                 firstComment.setUser_id(photo.getUser_id());
@@ -185,8 +186,9 @@ public class ViewCommentsFragment extends Fragment {
                     comment.setUser_id(document.get(mContext.getString(R.string.dbname_user_id)).toString());
                     comment.setDate_created(document.get(mContext.getString(R.string.dbname_date_created)).toString());
                     comments.add(comment);
+                    commentsExcludeFirstOne.add(comment);
                 }
-                photo.setComments(comments);
+                photo.setComments(commentsExcludeFirstOne);
                 CommentListAdapter commentListAdapter = new CommentListAdapter(mContext, R.layout.layout_center_comments,comments);
                 mListView.setAdapter(commentListAdapter);
 
