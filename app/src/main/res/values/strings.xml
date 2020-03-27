@@ -46,4 +46,6 @@
     <string name="dbname_comment">comment</string>
     <string name="dbname_date_created">date_created</string>
     <string name="dbcollection_comments">comments</string>
+    <string name="dbname_users">users</string>
+    <string name="field_profile_path">image_path</string>
 </resources>
