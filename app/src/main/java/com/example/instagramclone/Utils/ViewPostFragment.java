@@ -93,8 +93,8 @@ public class ViewPostFragment extends Fragment {
 
     //widgets
     private SquareImageView mPostImage;
-    TextView mBackLabel, mCaption, mUsername, mTimeStamp, mLikes, mComments;
-    ImageView mBackArrow, mEllipses, mHearRed, mHeartWhite, mProfileImage, mComment;
+    private TextView mBackLabel, mCaption, mUsername, mTimeStamp, mLikes, mComments;
+    private ImageView mBackArrow, mEllipses, mHearRed, mHeartWhite, mProfileImage, mComment;
     private BottomNavigationViewEx bottomNavigationView;
 
     @Nullable
