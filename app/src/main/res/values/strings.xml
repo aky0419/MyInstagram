@@ -48,4 +48,7 @@
     <string name="dbcollection_comments">comments</string>
     <string name="dbname_users">users</string>
     <string name="field_profile_path">image_path</string>
+    <string name="search_activity">Search Activity</string>
+    <string name="intent_user">user</string>
+    <string name="view_profile_fragment">View Profile</string>
 </resources>

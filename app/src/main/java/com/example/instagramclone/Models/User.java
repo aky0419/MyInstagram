@@ -1,6 +1,9 @@
 package com.example.instagramclone.Models;
 
-public class User {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class User implements Parcelable {
 
     private String email;
     private String phone_number;
@@ -13,6 +16,25 @@ public class User {
         this.user_id = user_id;
         this.username = username;
     }
+
+    protected User(Parcel in) {
+        email = in.readString();
+        phone_number = in.readString();
+        user_id = in.readString();
+        username = in.readString();
+    }
+
+    public static final Creator<User> CREATOR = new Creator<User>() {
+        @Override
+        public User createFromParcel(Parcel in) {
+            return new User(in);
+        }
+
+        @Override
+        public User[] newArray(int size) {
+            return new User[size];
+        }
+    };
 
     @Override
     public String toString() {
@@ -57,5 +79,18 @@ public class User {
     }
 
     public User() {
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(email);
+        dest.writeString(phone_number);
+        dest.writeString(user_id);
+        dest.writeString(username);
     }
 }

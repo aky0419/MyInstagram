@@ -1,12 +1,15 @@
 package com.example.instagramclone.Profile;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,10 +17,12 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.example.instagramclone.Models.Photo;
+import com.example.instagramclone.Models.User;
 import com.example.instagramclone.R;
 import com.example.instagramclone.Utils.BottomNavigationViewHelper;
 import com.example.instagramclone.Utils.ViewCommentsFragment;
 import com.example.instagramclone.Utils.ViewPostFragment;
+import com.example.instagramclone.Utils.ViewProfileFragment;
 import com.ittianyu.bottomnavigationviewex.BottomNavigationViewEx;
 
 
@@ -83,6 +88,32 @@ public class ProfileActivity extends AppCompatActivity implements
         transaction.replace(R.id.container,fragment);
         transaction.addToBackStack(getString(R.string.profile_fragment));
         transaction.commit();
+
+        Intent intent = getIntent();
+        if (intent.hasExtra(getString(R.string.calling_activity))) {
+            Log.d(TAG, "init: coming from search activity and searching for user object attached as intent extra");
+            if (intent.hasExtra(getString(R.string.intent_user))) {
+                Log.d(TAG, "init: inflating view profile");
+                ViewProfileFragment viewProfileFragment = new ViewProfileFragment();
+                Bundle arg = new Bundle();
+                arg.putParcelable(getString(R.string.intent_user),intent.getParcelableExtra(getString(R.string.intent_user)));
+                viewProfileFragment.setArguments(arg);
+
+                FragmentTransaction transaction1 = getSupportFragmentManager().beginTransaction();
+                transaction1.replace(R.id.container, viewProfileFragment);
+                transaction1.addToBackStack(getString(R.string.view_profile_fragment));
+                transaction1.commit();
+            } else {
+                Toast.makeText(mContext, "something went wrong", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Log.d(TAG, "init: inflating profile");
+            ProfileFragment profileFragment = new ProfileFragment();
+            FragmentTransaction transaction2 = getSupportFragmentManager().beginTransaction();
+            transaction2.replace(R.id.container, profileFragment);
+            transaction2.addToBackStack(getString(R.string.profile_fragment));
+            transaction2.commit();
+        }
 
     }
 
