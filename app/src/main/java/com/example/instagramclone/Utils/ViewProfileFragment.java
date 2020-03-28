@@ -14,6 +14,7 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,6 +26,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.example.instagramclone.Models.Comment;
 import com.example.instagramclone.Models.Photo;
+import com.example.instagramclone.Models.User;
 import com.example.instagramclone.Profile.AccountSettingActivity;
 import com.example.instagramclone.Profile.ProfileActivity;
 import com.example.instagramclone.Profile.ProfileFragment;
@@ -42,6 +44,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.ittianyu.bottomnavigationviewex.BottomNavigationViewEx;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,20 +53,24 @@ import java.util.Map;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 
-public class ViewProfileFragment extends Fragment { private static final String TAG = "ProfileFragment";
+public class ViewProfileFragment extends Fragment {
+    private static final String TAG = "ProfileFragment";
 
-    public interface OnGridImageSelectedListener{
+    public interface OnGridImageSelectedListener {
         void onGridImageSelected(Photo photo, int activityNumber);
     }
+
     ProfileFragment.OnGridImageSelectedListener onGridImageSelectedListener;
 
-    private TextView mPosts, mFollowers, mFollowing, mDisplayName, mUsername, mWebsite, mDescription, editProfile;
+    private TextView mPosts, mFollowers, mFollowing, mDisplayName, mUsername, mWebsite, mDescription, editProfile, follow, unfllow, following;
     private CircleImageView mProfilePhoto;
     private Toolbar toolbar;
     private BottomNavigationView bottomNavigationView;
     private ImageView profileMenu;
     private ProgressBar mProgressBar;
     private GridView gridView;
+
+    private User mUser;
 
     private Context mContext;
     private static final int ACTIVITY_NUM = 3;
@@ -80,7 +87,7 @@ public class ViewProfileFragment extends Fragment { private static final String 
     @Nullable
     @Override
     public View onCreateView(@NonNull final LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_profile, container, false);
+        View view = inflater.inflate(R.layout.fragment_view_profile, container, false);
 
         mPosts = view.findViewById(R.id.tvPosts);
         mFollowers = view.findViewById(R.id.tvFollowers);
@@ -89,19 +96,31 @@ public class ViewProfileFragment extends Fragment { private static final String 
         mUsername = view.findViewById(R.id.profileName);
         mWebsite = view.findViewById(R.id.display_website);
         mDescription = view.findViewById(R.id.display_description);
-        editProfile =view.findViewById(R.id.textEditProfile);
-        editProfile.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "onClick: navigating to" +mContext.getString(R.string.edit_profile_fragment));
-                Intent intent = new Intent(mContext, AccountSettingActivity.class);
-                intent.putExtra(getString(R.string.calling_activity), getString(R.string.profile_activity));
-                startActivity(intent);
-                getActivity().overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+        unfllow = view.findViewById(R.id.unfollow);
+        following = view.findViewById(R.id.following);
+        follow = view.findViewById(R.id.follow);
 
-            }
-        });
+        setupFirebaseAuth();
 
+        try {
+            mUser = getUserFromBundle();
+            init();
+        }catch (NullPointerException e) {
+            Log.e(TAG, "onCreateView: NullPointerException " + e.getMessage() );
+            Toast.makeText(mContext, "something went wrong", Toast.LENGTH_SHORT).show();
+            getActivity().getSupportFragmentManager().popBackStack();
+        }
+//        follow.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Log.d(TAG, "onClick: navigating to" +mContext.getString(R.string.edit_profile_fragment));
+//                Intent intent = new Intent(mContext, AccountSettingActivity.class);
+//                intent.putExtra(getString(R.string.calling_activity), getString(R.string.profile_activity));
+//                startActivity(intent);
+//                getActivity().overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+//
+//            }
+//        });
 
 
         gridView = view.findViewById(R.id.gridView);
@@ -114,20 +133,73 @@ public class ViewProfileFragment extends Fragment { private static final String 
 
         Log.d(TAG, "onCreateView: started.");
 
-        setupFirebaseAuth();
         setupBottomNavigationView();
         setupToolbar();
-        setupGridView();
+        //setupGridView();
 
 
         return view;
+    }
+
+    private void init() {
+        // 1) get profile details; set profile widgets
+        db.collection(getString(R.string.dbname_user_account_settings)).document(mUser.getUser_id()).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    Map<String, Object> data = task.getResult().getData();
+                    mPosts.setText(data.get(getString(R.string.field_posts)).toString());
+                    mFollowers.setText(data.get(getString(R.string.field_followers)).toString());
+                    mFollowing.setText(data.get(getString(R.string.field_following)).toString());
+                    mDisplayName.setText(data.get(getString(R.string.field_display_name)).toString());
+                    mDescription.setText(data.get(getString(R.string.field_description)).toString());
+                    mUsername.setText(data.get(getString(R.string.field_username)).toString());
+                    mWebsite.setText(data.get(getString(R.string.field_website)).toString());
+
+                    String profileImageUrl = data.get(getString(R.string.field_profile_photo)).toString();
+                    ImageLoader imageLoader = ImageLoader.getInstance();
+                    imageLoader.displayImage(profileImageUrl,mProfilePhoto);
+
+                    mProgressBar.setVisibility(View.GONE);
+                }
+            }
+        });
+        // 2) get user's profile photos
+        final ArrayList<Photo> photos = new ArrayList<>();
+        final ArrayList<String> imageUrls = new ArrayList<>();
+        CollectionReference photoRef = db.collection(getString(R.string.dbname_photos));
+        Query query = photoRef.whereEqualTo(getString(R.string.field_user_id),mUser.getUser_id());
+        query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+           if (task.isSuccessful()) {
+               QuerySnapshot result = task.getResult();
+               for (DocumentSnapshot d : result) {
+                   photos.add(d.toObject(Photo.class));
+                   imageUrls.add(d.get(getString(R.string.field_image_path)).toString());
+               }
+               //setup GridView
+               GridImageAdapter adapter = new GridImageAdapter(mContext, R.layout.layout_grid_imageview,"",imageUrls);
+               gridView.setAdapter(adapter);
+           }
+            }
+        });
+    }
+    private User getUserFromBundle() {
+        Log.d(TAG, "getUserFromBundle: argument: " + getArguments());
+        Bundle bundle = this.getArguments();
+        if (bundle != null) {
+            return bundle.getParcelable(getString(R.string.intent_user));
+        } else {
+            return null;
+        }
     }
 
     @Override
     public void onAttach(@NonNull Context context) {
         try {
             onGridImageSelectedListener = (ProfileFragment.OnGridImageSelectedListener) getActivity();
-        }catch (ClassCastException e) {
+        } catch (ClassCastException e) {
             Log.e(TAG, "onAttach: ClassCastException " + e.getMessage());
         }
         super.onAttach(context);
@@ -135,57 +207,6 @@ public class ViewProfileFragment extends Fragment { private static final String 
 
 
 
-    private void setupGridView() {
-        Log.d(TAG, "setupGridView: Setting up image grid.");
-
-        final ArrayList<Photo> photos = new ArrayList<>();
-
-        final ArrayList<String> imgUrl = new ArrayList<>();
-        final CollectionReference photosRef = db.collection("photos");
-        final Query query = photosRef.whereEqualTo("user_id", mAuth.getUid());
-        query.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-            @Override
-            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-
-                List<DocumentSnapshot> documents = queryDocumentSnapshots.getDocuments();
-                for (int i=0; i<documents.size(); i++) {
-                    imgUrl.add(documents.get(i).get("image_path").toString());
-                    photos.add(documents.get(i).toObject(Photo.class));
-                    CollectionReference commentsRef = documents.get(i).getReference().collection("comments");
-                    final int finalI = i;
-                    commentsRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                            if (task.isSuccessful()) {
-                                List<DocumentSnapshot> commentsSnapshot = task.getResult().getDocuments();
-                                List<Comment> comments = new ArrayList<>();
-                                for (DocumentSnapshot s : commentsSnapshot) {
-                                    comments.add(s.toObject(Comment.class));
-                                }
-                                photos.get(finalI).setComments(comments);
-                            } else {
-                                new AlertDialog.Builder(getContext())
-                                        .setTitle(task.getException().getLocalizedMessage()).show();
-                            }
-                        }
-                    });
-
-                }
-                int gridWidth = getResources().getDisplayMetrics().widthPixels;
-                int imageWidth = gridWidth/NUM_GIRD_COLUMNS;
-                gridView.setColumnWidth(imageWidth);
-
-                GridImageAdapter adapter = new GridImageAdapter(mContext,R.layout.layout_grid_imageview, "", imgUrl);
-                gridView.setAdapter(adapter);
-                gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        onGridImageSelectedListener.onGridImageSelected(photos.get(position), ACTIVITY_NUM );
-                    }
-                });
-            }
-        });
-    }
 
     private void setupToolbar() {
         ((ProfileActivity) getActivity()).setSupportActionBar(toolbar);
@@ -207,7 +228,7 @@ public class ViewProfileFragment extends Fragment { private static final String 
     private void setupBottomNavigationView() {
         Log.d(TAG, "setupBottomNavigationView: setting up BottomNavigationView");
         BottomNavigationViewHelper.setupBottomNavigationView((BottomNavigationViewEx) bottomNavigationView);
-        BottomNavigationViewHelper.enableNavigation(mContext,getActivity(), (BottomNavigationViewEx) bottomNavigationView);
+        BottomNavigationViewHelper.enableNavigation(mContext, getActivity(), (BottomNavigationViewEx) bottomNavigationView);
         Menu menu = bottomNavigationView.getMenu();
         MenuItem menuItem = menu.getItem(ACTIVITY_NUM);
 
@@ -229,45 +250,45 @@ public class ViewProfileFragment extends Fragment { private static final String 
          * Database: user_account_settings node
          */
 
-        db.collection("user_account_settings")
-                .document(mAuth.getUid()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
-
-                Map<String, Object> doc = documentSnapshot.getData();
-                Log.d(TAG, "onSuccess: setting widgets with data retrieving from firebase database: "+ doc.get("profile_photo"));
-
-                UniversalImageLoader.setImage(doc.get("profile_photo").toString(),mProfilePhoto,null,"");
-
-                mDescription.setText(doc.get("description").toString());
-
-                String username = StringManipulation.expandUsername(doc.get("username").toString());
-                mUsername.setText(username);
-
-                mWebsite.setText(doc.get("website").toString());
-                mFollowers.setText(doc.get("followers").toString());
-                mFollowing.setText(doc.get("following").toString());
-                mPosts.setText(doc.get("posts").toString());
-                mDisplayName.setText(doc.get("display_name").toString());
-
-                mProgressBar.setVisibility(View.GONE);
-
-
-            }
-        });
-
-
-
+//        db.collection("user_account_settings")
+//                .document(mAuth.getUid()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+//            @Override
+//            public void onSuccess(DocumentSnapshot documentSnapshot) {
+//
+//                Map<String, Object> doc = documentSnapshot.getData();
+//                Log.d(TAG, "onSuccess: setting widgets with data retrieving from firebase database: "+ doc.get("profile_photo"));
+//
+//                UniversalImageLoader.setImage(doc.get("profile_photo").toString(),mProfilePhoto,null,"");
+//
+//                mDescription.setText(doc.get("description").toString());
+//
+//                String username = StringManipulation.expandUsername(doc.get("username").toString());
+//                mUsername.setText(username);
+//
+//                mWebsite.setText(doc.get("website").toString());
+//                mFollowers.setText(doc.get("followers").toString());
+//                mFollowing.setText(doc.get("following").toString());
+//                mPosts.setText(doc.get("posts").toString());
+//                mDisplayName.setText(doc.get("display_name").toString());
+//
+//                mProgressBar.setVisibility(View.GONE);
+//
+//
+//            }
+//        });
+//
+//
+//
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        // Check if user is signed in (non-null) and update UI accordingly.
-        //FirebaseUser currentUser = mAuth.getCurrentUser();
-        setupFirebaseAuth();
-        // check if user is logged in
-        // checkCurrentUser(currentUser);
+        @Override
+        public void onStart () {
+            super.onStart();
+            // Check if user is signed in (non-null) and update UI accordingly.
+            //FirebaseUser currentUser = mAuth.getCurrentUser();
+            setupFirebaseAuth();
+            // check if user is logged in
+            // checkCurrentUser(currentUser);
 
 //        if (currentUser == null) {
 //            mAuth.signInWithEmailAndPassword("kenchan52016@yahoo.com","123456")
@@ -290,5 +311,6 @@ public class ViewProfileFragment extends Fragment { private static final String 
 //
 //        }
 
+        }
     }
-}
+
