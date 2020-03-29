@@ -18,7 +18,7 @@ import com.example.instagramclone.R;
 import com.example.instagramclone.login.LoginActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firestore.admin.v1beta1.Progress;
+
 
 public class SignOutFragment extends Fragment {
 

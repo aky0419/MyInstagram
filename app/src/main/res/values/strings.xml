@@ -65,4 +65,5 @@
     <string name="dbname_follower">follower</string>
     <string name="field_follower">follower</string>
     <string name="dbname_follow">follow</string>
+    <string name="home_activity">Home Activity</string>
 </resources>

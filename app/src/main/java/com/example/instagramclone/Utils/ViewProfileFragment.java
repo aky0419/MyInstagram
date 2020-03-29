@@ -66,9 +66,9 @@ public class ViewProfileFragment extends Fragment {
 
     private TextView mPosts, mFollowers, mFollowing, mDisplayName, mUsername, mWebsite, mDescription, mEditProfile, follow, unfollow, following;
     private CircleImageView mProfilePhoto;
-    private Toolbar toolbar;
+//    private Toolbar toolbar;
     private BottomNavigationView bottomNavigationView;
-    private ImageView profileMenu;
+    private ImageView profileMenu, mBackArrow;
     private ProgressBar mProgressBar;
     private GridView gridView;
 
@@ -86,6 +86,10 @@ public class ViewProfileFragment extends Fragment {
     private DatabaseReference mReference;
     private FirebaseFirestore db;
 
+    private int followerCount = 0;
+    private int followingCount = 0;
+    private int postCount = 0;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull final LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -102,6 +106,7 @@ public class ViewProfileFragment extends Fragment {
         following = view.findViewById(R.id.following);
         follow = view.findViewById(R.id.follow);
         mEditProfile = view.findViewById(R.id.textEditProfile);
+        mBackArrow = view.findViewById(R.id.backArrow);
 
         setupFirebaseAuth();
 
@@ -132,7 +137,7 @@ public class ViewProfileFragment extends Fragment {
         gridView = view.findViewById(R.id.gridView);
         mProgressBar = view.findViewById(R.id.profileProgressBar);
         mProfilePhoto = view.findViewById(R.id.profile_photo);
-        toolbar = view.findViewById(R.id.profileToolBar);
+//        toolbar = view.findViewById(R.id.profileToolBar);
         bottomNavigationView = view.findViewById(R.id.bottomNavViewBar);
         profileMenu = view.findViewById(R.id.profileMenu);
         mContext = getActivity();
@@ -141,10 +146,15 @@ public class ViewProfileFragment extends Fragment {
 
         setCurrentUserProfile();
 
-        isFollowing();
+
         setupBottomNavigationView();
-        setupToolbar();
+//        setupToolbar();
         //setupGridView();
+
+        isFollowing();
+
+        getFollowInfo();
+        getPostsCount();
 
         follow.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -190,6 +200,15 @@ public class ViewProfileFragment extends Fragment {
             }
         });
 
+        mBackArrow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "onClick: navigating back");
+                getActivity().getSupportFragmentManager().popBackStack();
+                getActivity().finish();
+            }
+        });
+
         return view;
     }
     
@@ -212,6 +231,48 @@ public class ViewProfileFragment extends Fragment {
                         setUnfollowing();
                     }
                 }
+            }
+        });
+
+    }
+
+    private void getFollowInfo() {
+
+            final CollectionReference followRef = db.collection(getString(R.string.dbname_follow));
+            Query query = followRef.whereEqualTo(getString(R.string.field_following), mUser.getUser_id());
+            query.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                @Override
+                public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                    Log.d(TAG, "onSuccess: found following users");
+                followingCount = queryDocumentSnapshots.getDocuments().size();
+                mFollowing.setText(String.valueOf(followingCount));
+
+                }
+            });
+
+        final CollectionReference followRef1 = db.collection(getString(R.string.dbname_follow));
+        Query query1 = followRef1.whereEqualTo(getString(R.string.field_follower), mUser.getUser_id());
+        query1.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                Log.d(TAG, "onSuccess: found followers");
+                followerCount = queryDocumentSnapshots.getDocuments().size();
+                mFollowers.setText(String.valueOf(followerCount));
+            }
+        });
+    }
+
+    private void getPostsCount() {
+
+        final CollectionReference photoRef = db.collection(getString(R.string.dbname_photos));
+        Query query = photoRef.whereEqualTo(getString(R.string.field_user_id), mUser.getUser_id());
+        query.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                Log.d(TAG, "onSuccess: found following users");
+                postCount = queryDocumentSnapshots.getDocuments().size();
+                mPosts.setText(String.valueOf(postCount));
+
             }
         });
 
@@ -245,9 +306,9 @@ public class ViewProfileFragment extends Fragment {
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if (task.isSuccessful()) {
                     Map<String, Object> data = task.getResult().getData();
-                    mPosts.setText(data.get(getString(R.string.field_posts)).toString());
-                    mFollowers.setText(data.get(getString(R.string.field_followers)).toString());
-                    mFollowing.setText(data.get(getString(R.string.field_following)).toString());
+                    //mPosts.setText(data.get(getString(R.string.field_posts)).toString());
+//                    mFollowers.setText(data.get(getString(R.string.field_followers)).toString());
+//                    mFollowing.setText(data.get(getString(R.string.field_following)).toString());
                     mDisplayName.setText(data.get(getString(R.string.field_display_name)).toString());
                     mDescription.setText(data.get(getString(R.string.field_description)).toString());
                     mUsername.setText(data.get(getString(R.string.field_username)).toString());
@@ -318,21 +379,21 @@ public class ViewProfileFragment extends Fragment {
 
 
 
-    private void setupToolbar() {
-        ((ProfileActivity) getActivity()).setSupportActionBar(toolbar);
-        profileMenu.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "onClick: navigating to account settings");
-                Intent intent = new Intent(mContext, AccountSettingActivity.class);
-
-
-                startActivity(intent);
-            }
-        });
-
-
-    }
+//    private void setupToolbar() {
+//        ((ProfileActivity) getActivity()).setSupportActionBar(toolbar);
+//        profileMenu.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Log.d(TAG, "onClick: navigating to account settings");
+//                Intent intent = new Intent(mContext, AccountSettingActivity.class);
+//
+//
+//                startActivity(intent);
+//            }
+//        });
+//
+//
+//    }
 
 
     private void setupBottomNavigationView() {

@@ -3,6 +3,7 @@ package com.example.instagramclone.Home;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.viewpager.widget.ViewPager;
 
 import android.content.Context;
@@ -13,10 +14,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.example.instagramclone.Models.Photo;
 import com.example.instagramclone.R;
 import com.example.instagramclone.Utils.BottomNavigationViewHelper;
 import com.example.instagramclone.Utils.SectionsPagerAdapter;
 import com.example.instagramclone.Utils.UniversalImageLoader;
+import com.example.instagramclone.Utils.ViewCommentsFragment;
 import com.example.instagramclone.login.LoginActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -44,6 +47,18 @@ public class HomeActivity extends AppCompatActivity {
         setupBottomNavigationView();
         setupViewPager();
 
+
+    }
+
+    public void onCommentThreadSelected(Photo photo) {
+        ViewCommentsFragment viewCommentsFragment = new ViewCommentsFragment();
+        Bundle arg = new Bundle();
+        arg.putParcelable(getString(R.string.photo), photo);
+
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.container, viewCommentsFragment);
+        transaction.addToBackStack(getString(R.string.view_comments_fragment));
+        transaction.commit();
 
     }
 

@@ -164,11 +164,12 @@ public class ViewPostFragment extends Fragment {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
 //                documentSnapshot.getReference().collection("comments").get().addOnSuccessListener()
-                likes = (List<String>) documentSnapshot.get(getString(R.string.field_likes));
-                if (likes == null || likes.isEmpty()) {
+                List<String> likesFromDB = (List<String>) documentSnapshot.get(getString(R.string.field_likes));
+                if (likesFromDB == null || likesFromDB.isEmpty()) {
                     mLikedByCurrentUser = false;
                     mLikes.setText("");
                 } else {
+                    likes = (List<String>) documentSnapshot.get(getString(R.string.field_likes));
                     mLikedByCurrentUser = false;
                     for (int i = 0; i < likes.size(); i++) {
                         if (likes.get(i).equals(mAuth.getUid())) {
@@ -237,13 +238,14 @@ public class ViewPostFragment extends Fragment {
                 @Override
                 public void onSuccess(DocumentSnapshot documentSnapshot) {
 
-                    likes = (List<String>) documentSnapshot.get(getString(R.string.field_likes));
-                    if (likes == null) {
+                    List<String> likesFromDB =  (List<String>) documentSnapshot.get(getString(R.string.field_likes));
+                    if (likesFromDB == null) {
                         //add new like
                         addNewLike();
                         heart.toggleLike();
 
                     } else {
+                        likes = likesFromDB;
                         if (likes.contains(mAuth.getUid())) {
                             int idx = likes.indexOf(mAuth.getUid());
                             likes.remove(idx);
@@ -283,18 +285,33 @@ public class ViewPostFragment extends Fragment {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
 
-                likes = (List<String>) documentSnapshot.get(getString(R.string.field_likes));
-                likes.add(like.getUser_id());
-                Map<String, Object> updates = new HashMap<>();
-                updates.put(getString(R.string.field_likes), likes);
-                photoDocRef.update(updates).addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
+                if (documentSnapshot.get(getString(R.string.field_likes)) == null) {
+                    likes.add(like.getUser_id());
+                    Map<String, Object> updates = new HashMap<>();
+                    updates.put(getString(R.string.field_likes), likes);
+                    photoDocRef.update(updates).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
 
-                        getLikesString();
+                            getLikesString();
 
-                    }
-                });
+                        }
+                    });
+
+                } else {
+                    likes = (List<String>) documentSnapshot.get(getString(R.string.field_likes));
+                    likes.add(like.getUser_id());
+                    Map<String, Object> updates = new HashMap<>();
+                    updates.put(getString(R.string.field_likes), likes);
+                    photoDocRef.update(updates).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+
+                            getLikesString();
+
+                        }
+                    });
+                }
             }
         });
     }

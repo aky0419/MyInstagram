@@ -78,6 +78,11 @@ public class ProfileFragment extends Fragment {
 
     private static final int NUM_GIRD_COLUMNS = 3;
 
+    private int followerCount = 0;
+    private int followingCount = 0;
+    private int postCount = 0;
+
+
     //firebase
     private FirebaseAuth mAuth;
     private FirebaseDatabase mFirebaseDatabase;
@@ -126,6 +131,9 @@ public class ProfileFragment extends Fragment {
         setupToolbar();
         setupGridView();
 
+        getFollowInfo();
+        getPostsCount();
+
 
         return view;
     }
@@ -141,6 +149,47 @@ public class ProfileFragment extends Fragment {
     }
 
 
+    private void getFollowInfo() {
+
+        final CollectionReference followRef = db.collection(getString(R.string.dbname_follow));
+        Query query = followRef.whereEqualTo(getString(R.string.field_following), mAuth.getCurrentUser().getUid());
+        query.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                Log.d(TAG, "onSuccess: found following users");
+                followingCount = queryDocumentSnapshots.getDocuments().size();
+                mFollowing.setText(String.valueOf(followingCount));
+
+            }
+        });
+
+        final CollectionReference followRef1 = db.collection(getString(R.string.dbname_follow));
+        Query query1 = followRef1.whereEqualTo(getString(R.string.field_follower), mAuth.getCurrentUser().getUid());
+        query1.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                Log.d(TAG, "onSuccess: found followers");
+                followerCount = queryDocumentSnapshots.getDocuments().size();
+                mFollowers.setText(String.valueOf(followerCount));
+            }
+        });
+    }
+
+    private void getPostsCount() {
+
+        final CollectionReference photoRef = db.collection(getString(R.string.dbname_photos));
+        Query query = photoRef.whereEqualTo(getString(R.string.field_user_id), mAuth.getCurrentUser().getUid());
+        query.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                Log.d(TAG, "onSuccess: found following users");
+                postCount = queryDocumentSnapshots.getDocuments().size();
+                mPosts.setText(String.valueOf(postCount));
+
+            }
+        });
+
+    }
 
     private void setupGridView() {
         Log.d(TAG, "setupGridView: Setting up image grid.");
@@ -252,9 +301,9 @@ public class ProfileFragment extends Fragment {
                 mUsername.setText(username);
 
                 mWebsite.setText(doc.get("website").toString());
-                mFollowers.setText(doc.get("followers").toString());
-                mFollowing.setText(doc.get("following").toString());
-                mPosts.setText(doc.get("posts").toString());
+//                mFollowers.setText(doc.get("followers").toString());
+//                mFollowing.setText(doc.get("following").toString());
+//                mPosts.setText(doc.get("posts").toString());
                 mDisplayName.setText(doc.get("display_name").toString());
 
                 mProgressBar.setVisibility(View.GONE);
