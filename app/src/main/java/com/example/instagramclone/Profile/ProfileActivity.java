@@ -27,7 +27,7 @@ import com.ittianyu.bottomnavigationviewex.BottomNavigationViewEx;
 
 
 public class ProfileActivity extends AppCompatActivity implements
-        ProfileFragment.OnGridImageSelectedListener, ViewPostFragment.OnCommentThreadSelectedListener {
+        ProfileFragment.OnGridImageSelectedListener, ViewPostFragment.OnCommentThreadSelectedListener, ViewProfileFragment.OnGridImageSelectedListener {
     private static final String TAG = "ProfileActivity";
 
     @Override

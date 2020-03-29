@@ -17,7 +17,8 @@
             android:textColor="@color/black"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            android:textAlignment="center"/>
 
         <TextView
             android:id="@+id/textPosts"
@@ -27,7 +28,8 @@
             android:text="Posts"
             android:textSize="12sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvPosts" />
+            app:layout_constraintTop_toBottomOf="@+id/tvPosts"
+            android:textAlignment="center"/>
 
         <TextView
             android:id="@+id/tvFollowers"
@@ -39,7 +41,8 @@
             app:layout_constraintEnd_toStartOf="@+id/tvFollowing"
             app:layout_constraintHorizontal_bias="0.48"
             app:layout_constraintStart_toEndOf="@+id/tvPosts"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            android:textAlignment="center"/>
 
         <TextView
             android:id="@+id/textFollowers"
@@ -50,7 +53,8 @@
             app:layout_constraintEnd_toStartOf="@+id/textFollowing"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/textPosts"
-            app:layout_constraintTop_toBottomOf="@+id/tvFollowers" />
+            app:layout_constraintTop_toBottomOf="@+id/tvFollowers"
+            android:textAlignment="center"/>
 
         <TextView
             android:id="@+id/tvFollowing"
@@ -61,7 +65,8 @@
             android:textColor="@color/black"
             android:textSize="18sp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            android:textAlignment="center"/>
 
         <TextView
             android:id="@+id/textFollowing"
@@ -70,7 +75,8 @@
             android:text="Following"
             android:textSize="12sp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvFollowing" />
+            app:layout_constraintTop_toBottomOf="@+id/tvFollowing"
+            android:textAlignment="center"/>
 
         <TextView
             android:id="@+id/follow"
@@ -89,6 +95,24 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textFollowers"
             app:layout_constraintVertical_bias="0.0" />
+
+        <TextView
+            android:id="@+id/textEditProfile"
+            android:layout_width="156dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/grey_border"
+            android:text="Edit your profile"
+            android:textAlignment="center"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textFollowers"
+            app:layout_constraintVertical_bias="0.0"
+            android:visibility="gone"/>
 
         <TextView
             android:id="@+id/unfollow"

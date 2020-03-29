@@ -43,6 +43,7 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.ittianyu.bottomnavigationviewex.BottomNavigationViewEx;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 import org.w3c.dom.Document;
 
@@ -139,6 +140,8 @@ public class ViewPostFragment extends Fragment {
         getPhotoDetails();
 
 
+
+
         return view;
     }
 
@@ -160,6 +163,7 @@ public class ViewPostFragment extends Fragment {
         photoRef.document(photo.getPhoto_id()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
+//                documentSnapshot.getReference().collection("comments").get().addOnSuccessListener()
                 likes = (List<String>) documentSnapshot.get(getString(R.string.field_likes));
                 if (likes == null || likes.isEmpty()) {
                     mLikedByCurrentUser = false;
@@ -304,22 +308,12 @@ public class ViewPostFragment extends Fragment {
         } else {
             mTimeStamp.setText("TODAY");
         }
-        UniversalImageLoader.setImage(mProfileUrl, mProfileImage, null, "");
-        mBackLabel.setText(username);
+
+
         mCaption.setText(photo.getCaption());
 
-        if (photo.getComments() != null && photo.getComments().size()>0) {
-            mComments.setText("View all " + photo.getComments().size() + " comments");
-        } else {
-            mComments.setText("");
-        }
-        mComments.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "onClick: navigating to comments thread");
-                mOnCommentThreadSelectedListener.onCommentThreadSelectedListener(photo);
-            }
-        });
+
+
 
         mBackArrow.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -339,6 +333,19 @@ public class ViewPostFragment extends Fragment {
             }
         });
 
+
+        if (photo.getComments() != null && photo.getComments().size()>0) {
+            mComments.setText("View all " + photo.getComments().size() + " comments");
+        } else {
+            mComments.setText("");
+        }
+        mComments.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "onClick: navigating to comments thread");
+                mOnCommentThreadSelectedListener.onCommentThreadSelectedListener(photo);
+            }
+        });
 
         if (mLikedByCurrentUser) {
             mHeartWhite.setVisibility(View.GONE);
@@ -374,6 +381,11 @@ public class ViewPostFragment extends Fragment {
             public void onSuccess(DocumentSnapshot documentSnapshot) {
                 mProfileUrl = documentSnapshot.get("profile_photo").toString();
                 username = documentSnapshot.get("username").toString();
+
+                ImageLoader imageLoader = ImageLoader.getInstance();
+                imageLoader.displayImage(mProfileUrl, mProfileImage);
+
+                mBackLabel.setText(username);
 
 
             }

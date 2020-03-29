@@ -39,6 +39,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
@@ -47,6 +48,7 @@ import com.ittianyu.bottomnavigationviewex.BottomNavigationViewEx;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -62,7 +64,7 @@ public class ViewProfileFragment extends Fragment {
 
     ProfileFragment.OnGridImageSelectedListener onGridImageSelectedListener;
 
-    private TextView mPosts, mFollowers, mFollowing, mDisplayName, mUsername, mWebsite, mDescription, editProfile, follow, unfllow, following;
+    private TextView mPosts, mFollowers, mFollowing, mDisplayName, mUsername, mWebsite, mDescription, mEditProfile, follow, unfollow, following;
     private CircleImageView mProfilePhoto;
     private Toolbar toolbar;
     private BottomNavigationView bottomNavigationView;
@@ -96,11 +98,14 @@ public class ViewProfileFragment extends Fragment {
         mUsername = view.findViewById(R.id.profileName);
         mWebsite = view.findViewById(R.id.display_website);
         mDescription = view.findViewById(R.id.display_description);
-        unfllow = view.findViewById(R.id.unfollow);
+        unfollow = view.findViewById(R.id.unfollow);
         following = view.findViewById(R.id.following);
         follow = view.findViewById(R.id.follow);
+        mEditProfile = view.findViewById(R.id.textEditProfile);
 
         setupFirebaseAuth();
+
+
 
         try {
             mUser = getUserFromBundle();
@@ -110,17 +115,18 @@ public class ViewProfileFragment extends Fragment {
             Toast.makeText(mContext, "something went wrong", Toast.LENGTH_SHORT).show();
             getActivity().getSupportFragmentManager().popBackStack();
         }
-//        follow.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Log.d(TAG, "onClick: navigating to" +mContext.getString(R.string.edit_profile_fragment));
-//                Intent intent = new Intent(mContext, AccountSettingActivity.class);
-//                intent.putExtra(getString(R.string.calling_activity), getString(R.string.profile_activity));
-//                startActivity(intent);
-//                getActivity().overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-//
-//            }
-//        });
+
+        mEditProfile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "onClick: navigating to" +mContext.getString(R.string.edit_profile_fragment));
+                Intent intent = new Intent(mContext, AccountSettingActivity.class);
+                intent.putExtra(getString(R.string.calling_activity), getString(R.string.profile_activity));
+                startActivity(intent);
+                getActivity().overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+
+            }
+        });
 
 
         gridView = view.findViewById(R.id.gridView);
@@ -133,12 +139,103 @@ public class ViewProfileFragment extends Fragment {
 
         Log.d(TAG, "onCreateView: started.");
 
+        setCurrentUserProfile();
+
+        isFollowing();
         setupBottomNavigationView();
         setupToolbar();
         //setupGridView();
 
+        follow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "onClick: now following " + mUser.getUsername());
+
+                    Map<String, Object> mFollow = new HashMap<>();
+                    mFollow.put(getString(R.string.field_follower), mAuth.getCurrentUser().getUid());
+                    mFollow.put(getString(R.string.field_following), mUser.getUser_id());
+                    db.collection(getString(R.string.dbname_follow)).add(mFollow).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentReference> task) {
+                            if (task.isSuccessful()) {
+                                setFollowing();
+                            }
+                        }
+                    });
+
+
+            }
+        });
+
+        unfollow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "onClick: now unfollowing " + mUser.getUsername());
+                final CollectionReference followRef = db.collection(getString(R.string.dbname_follow));
+                Query query = followRef.whereEqualTo(getString(R.string.field_following), mUser.getUser_id())
+                        .whereEqualTo(getString(R.string.field_follower), mAuth.getCurrentUser().getUid());
+                query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            List<DocumentSnapshot> documents = task.getResult().getDocuments();
+                            for (DocumentSnapshot d : documents) {
+                                d.getReference().delete();
+                            }
+                            setUnfollowing();
+                        }
+                    }
+                });
+
+            }
+        });
 
         return view;
+    }
+    
+    private void isFollowing() {
+        Log.d(TAG, "isFollowing: checking if following this user.");
+        setFollowing();
+
+        final CollectionReference followRef = db.collection(getString(R.string.dbname_follow));
+        Query query = followRef.whereEqualTo(getString(R.string.field_following), mUser.getUser_id())
+                .whereEqualTo(getString(R.string.field_follower), mAuth.getCurrentUser().getUid());
+        query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    Log.d(TAG, "onComplete: found user");
+                    List<DocumentSnapshot> documents = task.getResult().getDocuments();
+                    if (documents.size() !=0) {
+                        setFollowing();
+                    } else {
+                        setUnfollowing();
+                    }
+                }
+            }
+        });
+
+    }
+
+    private void setFollowing() {
+        Log.d(TAG, "setFollowing: updating UI for following this user");
+        follow.setVisibility(View.GONE);
+        unfollow.setVisibility(View.VISIBLE);
+    }
+
+    private void setUnfollowing() {
+        Log.d(TAG, "setFollowing: updating UI for unfollowing this user");
+        follow.setVisibility(View.VISIBLE);
+        unfollow.setVisibility(View.GONE);
+    }
+
+    private void setCurrentUserProfile() {
+        Log.d(TAG, "setFollowing: updating UI for current user");
+        if (mUser.getUser_id().equals(mAuth.getCurrentUser().getUid())) {
+            mEditProfile.setVisibility(View.VISIBLE);
+            follow.setVisibility(View.GONE);
+            unfollow.setVisibility(View.GONE);
+        }
     }
 
     private void init() {
@@ -176,11 +273,24 @@ public class ViewProfileFragment extends Fragment {
                QuerySnapshot result = task.getResult();
                for (DocumentSnapshot d : result) {
                    photos.add(d.toObject(Photo.class));
+                   final Photo p = photos.get(photos.size()-1);
+                   d.getReference().collection("comments").get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                       @Override
+                       public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                           p.setComments(queryDocumentSnapshots.toObjects(Comment.class));
+                       }
+                   });
                    imageUrls.add(d.get(getString(R.string.field_image_path)).toString());
                }
                //setup GridView
                GridImageAdapter adapter = new GridImageAdapter(mContext, R.layout.layout_grid_imageview,"",imageUrls);
                gridView.setAdapter(adapter);
+               gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                   @Override
+                   public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                           onGridImageSelectedListener.onGridImageSelected(photos.get(position), ACTIVITY_NUM);
+                   }
+               });
            }
             }
         });
